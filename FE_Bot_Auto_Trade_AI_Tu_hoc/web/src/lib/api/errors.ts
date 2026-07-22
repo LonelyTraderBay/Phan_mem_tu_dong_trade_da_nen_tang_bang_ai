@@ -137,15 +137,38 @@ export function toApiFailure(options: {
   };
 }
 
-/** Short, safe copy for banners/toasts — keyed by kind + error.code. */
+/**
+ * Short, safe copy for banners/toasts — always surfaces error.code.
+ * Special labels for risk_unavailable / kill-switch / not_found so operators
+ * never mistake a deny for success.
+ */
 export function formatApiFailureForUi(failure: ApiFailure): string {
   const { kind, error } = failure;
   if (kind === "stub_not_implemented") {
-    return `Chưa sẵn sàng (501): ${error.message}`;
+    return `Chưa sẵn sàng (501) [${error.code}]: ${error.message}`;
   }
   if (kind === "network") {
     return error.message;
   }
+
+  const codeNorm = error.code.toLowerCase();
   const suffix = error.trace_id ? ` (trace: ${error.trace_id})` : "";
-  return `${error.message}${suffix}`;
+  const details =
+    error.details && error.details.length > 0
+      ? ` — ${error.details.map((d) => `${d.field}: ${d.reason}`).join("; ")}`
+      : "";
+
+  let label = `[${error.code}]`;
+  if (codeNorm === "risk_unavailable" || codeNorm === "risk_rejected") {
+    label = `[${error.code}] Risk unavailable / reject`;
+  } else if (
+    codeNorm.includes("kill_switch") ||
+    codeNorm === "kill_switch_active"
+  ) {
+    label = `[${error.code}] Kill-switch`;
+  } else if (codeNorm === "not_found") {
+    label = `[${error.code}] Not found`;
+  }
+
+  return `${label}: ${error.message}${details}${suffix}`;
 }

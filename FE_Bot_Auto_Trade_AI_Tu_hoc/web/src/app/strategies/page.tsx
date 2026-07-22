@@ -46,15 +46,20 @@ export default function StrategiesPage() {
   const [messageKind, setMessageKind] = useState<MessageKind | null>(null);
 
   const handleFailure = useCallback(
-    (result: ApiFailure) => {
+    (result: ApiFailure, context?: { action?: "activate" | "create" | "patch" }) => {
       setMessageKind(result.kind === "stub_not_implemented" ? "stub" : "err");
+      let text = formatApiFailureForUi(result);
       if (result.kind === "stub_not_implemented") {
-        setMessage(
-          `${formatApiFailureForUi(result)} — chưa xác nhận chạy strategy live.`,
-        );
-      } else {
-        setMessage(formatApiFailureForUi(result));
+        text = `${text} — chưa xác nhận chạy strategy live.`;
       }
+      if (context?.action === "activate") {
+        text = `${text} — Activate thất bại; status trên UI không đổi thành active.`;
+      } else if (context?.action === "create") {
+        text = `${text} — Create thất bại; không có strategy mới.`;
+      } else if (context?.action === "patch") {
+        text = `${text} — Patch thất bại; status trên UI giữ nguyên.`;
+      }
+      setMessage(text);
       if (result.kind === "unauthorized") {
         router.replace("/login");
       }
@@ -132,7 +137,7 @@ export default function StrategiesPage() {
     setBusy(false);
 
     if (!result.ok) {
-      handleFailure(result);
+      handleFailure(result, { action: "create" });
       return;
     }
 
@@ -158,13 +163,15 @@ export default function StrategiesPage() {
     setBusy(false);
 
     if (!result.ok) {
-      handleFailure(result);
+      handleFailure(result, {
+        action: status === "active" ? "activate" : "patch",
+      });
       return;
     }
 
     setMessageKind("ok");
     setMessage(
-      `Strategy ${result.data.id}: status → ${result.data.status}.`,
+      `Strategy ${result.data.id}: status → ${result.data.status} (server).`,
     );
     await refreshList(listFilterAccountId);
   }
@@ -192,9 +199,18 @@ export default function StrategiesPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-semibold tracking-tight">Strategies</h1>
       <p className="mt-1 text-sm text-neutral-600">
-        Form strategy đơn giản (tạo / start / pause / stop). Không có no-code
-        hay drag-drop builder (Deferred).
+        Form strategy đơn giản (tạo / start / pause / stop). Lỗi API
+        (risk_unavailable, kill-switch, not_found) hiển thị rõ — không bịa
+        success khi create/patch fail.
       </p>
+      <div
+        role="note"
+        className="mt-3 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+      >
+        <strong className="font-semibold">Form-only (In-MVP).</strong> Không có
+        no-code / drag-drop builder — mục đó là{" "}
+        <em>Out of MVP / Deferred</em>, không có trên UI này.
+      </div>
 
       <p className="mt-3 text-sm">
         <Link

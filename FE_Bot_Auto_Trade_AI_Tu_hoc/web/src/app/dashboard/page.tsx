@@ -150,8 +150,12 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
       <p className="mt-1 text-sm text-neutral-600">
-        Positions, PnL summary, và activity — chỉ hiển thị field từ server. Không
-        tính PnL phía client.
+        Positions, PnL summary, và activity — chỉ hiển thị field từ server.
+        Không tính PnL phía client.
+      </p>
+      <p className="mt-2 text-xs text-neutral-500" role="note">
+        Server truth: getPositions / getPnlSummary / getReportsTrades. Refresh
+        sau khi activate strategy để lấy số liệu ledger mới.
       </p>
 
       <p className="mt-3 text-sm">
@@ -160,6 +164,13 @@ export default function DashboardPage() {
           className="text-neutral-700 underline hover:text-neutral-900"
         >
           ← Screens
+        </Link>
+        {" · "}
+        <Link
+          href="/strategies"
+          className="text-neutral-700 underline hover:text-neutral-900"
+        >
+          Strategies
         </Link>
         {" · "}
         <Link
@@ -191,12 +202,12 @@ export default function DashboardPage() {
           disabled={busy}
           className="rounded border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
         >
-          {busy ? "Đang tải…" : "Tải dữ liệu"}
+          {busy ? "Đang tải…" : "Refresh"}
         </button>
       </form>
 
       <section className="mt-10">
-        <h2 className="text-lg font-medium">PnL summary (server)</h2>
+        <h2 className="text-lg font-medium">PnL summary (server truth)</h2>
         <StatusBanner status={pnlStatus} />
         {pnl ? (
           <dl className="mt-3 grid gap-1 text-sm text-neutral-800">
@@ -247,7 +258,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-lg font-medium">Positions</h2>
+        <h2 className="text-lg font-medium">Positions (server truth)</h2>
         <StatusBanner status={positionsStatus} />
         {positions.length === 0 ? (
           <p className="mt-2 text-sm text-neutral-600">
@@ -293,7 +304,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-lg font-medium">Activity (trades)</h2>
+        <h2 className="text-lg font-medium">Activity / trades (server truth)</h2>
         <StatusBanner status={activityStatus} />
         {trades.length === 0 ? (
           <p className="mt-2 text-sm text-neutral-600">

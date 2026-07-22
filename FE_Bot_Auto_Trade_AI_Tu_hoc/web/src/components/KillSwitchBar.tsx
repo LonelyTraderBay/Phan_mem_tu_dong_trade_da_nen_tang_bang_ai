@@ -15,14 +15,17 @@ const HIGHER_LEVELS = ["L2", "L3", "L4"] as const;
 
 /**
  * Always-visible L1 emergency pause (layout header — never buried in menus).
- * Mutate only after window.confirm. L2–L4 disabled (not In-MVP contract shape).
+ * Mutate only after window.confirm. Engaged state from getKillSwitchStatus API.
+ * L2–L4 disabled (not In-MVP contract shape).
  */
 export function KillSwitchBar() {
   const router = useRouter();
   const [status, setStatus] = useState<KillSwitchStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [stub, setStub] = useState(false);
+  const [messageKind, setMessageKind] = useState<"ok" | "err" | "stub" | null>(
+    null,
+  );
   const [authed, setAuthed] = useState(false);
 
   const loadStatus = useCallback(async () => {
@@ -35,7 +38,9 @@ export function KillSwitchBar() {
     const result = await getKillSwitchStatus();
     if (!result.ok) {
       setStatus(null);
-      setStub(result.kind === "stub_not_implemented");
+      setMessageKind(
+        result.kind === "stub_not_implemented" ? "stub" : "err",
+      );
       setMessage(formatApiFailureForUi(result));
       if (result.kind === "unauthorized") {
         setAuthed(false);
@@ -43,7 +48,7 @@ export function KillSwitchBar() {
       }
       return;
     }
-    setStub(false);
+    setMessageKind(null);
     setMessage(null);
     setStatus(result.data);
   }, [router]);
@@ -76,12 +81,14 @@ export function KillSwitchBar() {
     if (reason === null) return;
     const trimmed = reason.trim();
     if (trimmed.length === 0) {
+      setMessageKind("err");
       setMessage("Reason is required to change kill-switch.");
       return;
     }
 
     setBusy(true);
     setMessage(null);
+    setMessageKind(null);
     const result = await postKillSwitch({
       engaged: nextEngaged,
       reason: trimmed.slice(0, 500),
@@ -89,7 +96,9 @@ export function KillSwitchBar() {
     setBusy(false);
 
     if (!result.ok) {
-      setStub(result.kind === "stub_not_implemented");
+      setMessageKind(
+        result.kind === "stub_not_implemented" ? "stub" : "err",
+      );
       setMessage(formatApiFailureForUi(result));
       if (result.kind === "unauthorized") {
         setAuthed(false);
@@ -98,12 +107,12 @@ export function KillSwitchBar() {
       return;
     }
 
-    setStub(false);
     setStatus(result.data);
+    setMessageKind("ok");
     setMessage(
       result.data.engaged
-        ? "L1 engaged — new entries paused."
-        : "L1 disengaged — new entries allowed (subject to risk).",
+        ? "L1 engaged — new entries paused (server)."
+        : "L1 disengaged — new entries allowed subject to risk (server).",
     );
   }
 
@@ -111,6 +120,15 @@ export function KillSwitchBar() {
 
   return (
     <header className="border-b border-neutral-200 bg-white">
+      {engaged ? (
+        <div
+          role="status"
+          className="border-b border-red-700 bg-red-600 px-4 py-1 text-center text-xs font-semibold text-white"
+        >
+          L1 ENGAGED — new entries paused (from API)
+          {status?.updated_at ? ` · updated_at ${status.updated_at}` : ""}
+        </div>
+      ) : null}
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
           Kill switch
@@ -173,9 +191,11 @@ export function KillSwitchBar() {
         <div
           role="status"
           className={
-            stub
+            messageKind === "stub"
               ? "border-t border-amber-200 bg-amber-50 px-4 py-1.5 text-xs text-amber-950"
-              : "border-t border-neutral-100 bg-neutral-50 px-4 py-1.5 text-xs text-neutral-700"
+              : messageKind === "err"
+                ? "border-t border-red-200 bg-red-50 px-4 py-1.5 text-xs text-red-900"
+                : "border-t border-neutral-100 bg-neutral-50 px-4 py-1.5 text-xs text-neutral-700"
           }
         >
           <span className="mx-auto block max-w-5xl">{message}</span>

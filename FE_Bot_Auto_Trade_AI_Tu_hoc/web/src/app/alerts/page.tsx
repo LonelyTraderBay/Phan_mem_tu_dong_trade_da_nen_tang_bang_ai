@@ -64,8 +64,8 @@ export default function AlertsPage() {
     setMessageKind("ok");
     setMessage(
       result.data.length === 0
-        ? "Không có alert (hoặc bộ lọc trống)."
-        : `${result.data.length} alert(s).`,
+        ? "Không có alert từ API (empty list)."
+        : `${result.data.length} alert(s) — codes/messages từ server.`,
     );
   }, [acknowledged, router, severity]);
 
@@ -92,7 +92,9 @@ export default function AlertsPage() {
     <div>
       <h1 className="text-2xl font-semibold tracking-tight">Alerts</h1>
       <p className="mt-1 text-sm text-neutral-600">
-        Inbox vận hành — dữ liệu từ getAlerts (server truth).
+        Inbox vận hành — hiển thị <code className="text-xs">code</code> +{" "}
+        <code className="text-xs">message</code> từ getAlerts (server). Không
+        secrets.
       </p>
 
       <p className="mt-3 text-sm">
@@ -175,7 +177,7 @@ export default function AlertsPage() {
       <ul className="mt-4 divide-y divide-neutral-200 border border-neutral-200 bg-white">
         {alerts.length === 0 && !busy ? (
           <li className="px-3 py-4 text-sm text-neutral-500">
-            Inbox trống.
+            Inbox trống — không có alert từ API (hoặc bộ lọc không khớp).
           </li>
         ) : null}
         {alerts.map((alert) => (
@@ -192,7 +194,9 @@ export default function AlertsPage() {
               >
                 {alert.severity}
               </span>
-              <code className="text-xs text-neutral-500">{alert.code}</code>
+              <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-800">
+                {alert.code}
+              </code>
               <span className="text-xs text-neutral-400">
                 {alert.created_at}
               </span>
