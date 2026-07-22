@@ -1,0 +1,68 @@
+name: Governance
+
+on:
+  push:
+    branches: [main, "docs/**", "chore/**", "feat/**", "fix/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  governance:
+    name: Contracts + matrix + agent rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate governance (strict)
+        run: python scripts/validate_governance.py
+
+      - name: Path policy — forbid BE services + FE web in one PR
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          FILES=$(git diff --name-only "$BASE...$HEAD" || true)
+          BE=0
+          FE=0
+          while IFS= read -r f; do
+            [[ -z "$f" ]] && continue
+            case "$f" in
+              BE_Bot_Auto_Trade_AI_Tu_Hoc/services/*|BE_Bot_Auto_Trade_AI_Tu_Hoc/infra/*) BE=1 ;;
+              FE_Bot_Auto_Trade_AI_Tu_Hoc/web/*) FE=1 ;;
+            esac
+          done <<< "$FILES"
+          if [[ "$BE" -eq 1 && "$FE" -eq 1 ]]; then
+            echo "FAIL: PR touches BE services/infra AND FE web together."
+            if [[ "${PR_BODY:-}" != *OWNER_OVERRIDE_CROSS_LANE* ]]; then
+              echo "Split into two PRs, or Owner adds OWNER_OVERRIDE_CROSS_LANE to PR body."
+              exit 1
+            fi
+            echo "OK: Owner override present"
+          else
+            echo "OK: path policy"
+          fi
+
+      - name: Secret-like filename scan
+        run: |
+          set -euo pipefail
+          hits=$(find . -type f \( -name '.env' -o -name 'id_rsa' \) ! -path './.git/*' || true)
+          if [[ -n "$hits" ]]; then
+            echo "FAIL: secret-like filenames:"
+            echo "$hits"
+            exit 1
+          fi
+          echo "OK: no .env / id_rsa files"

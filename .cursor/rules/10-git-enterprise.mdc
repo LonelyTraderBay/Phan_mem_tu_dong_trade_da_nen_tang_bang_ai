@@ -1,0 +1,32 @@
+---
+description: Commit / push / PR theo chuẩn Enterprise (khi user yêu cầu)
+alwaysApply: false
+---
+
+# Git Enterprise
+
+Dùng khi user yêu cầu commit, push, tạo PR, đưa code lên remote/review.
+
+## Bắt buộc
+
+- Chỉ commit khi user yêu cầu rõ.
+- Không `--force` lên `main`/`master`; cảnh báo nếu user yêu cầu.
+- Không `--no-verify` trừ khi user yêu cầu rõ.
+- Không amend commit đã push trừ khi user yêu cầu và điều kiện an toàn đủ.
+- Không commit secret; chạy kiểm tra file nhạy cảm trước khi stage.
+- PR: dùng `gh pr create`; body có Summary + Test plan; trả URL PR.
+- Sau push: xác nhận `git status` sạch / tracking đúng branch.
+- Conventional / tiếng Việt rõ ràng: nói *why*, không chỉ *what*.
+
+## Trước commit
+
+1. `git status` / `git diff` / `git log` ngắn  
+2. Stage có chọn lọc  
+3. Commit message 1–2 câu  
+4. Không thêm file ngoài scope  
+
+## Trước PR
+
+1. Push `-u` nếu cần  
+2. Diff so với base  
+3. Không merge trừ khi user yêu cầu merge  

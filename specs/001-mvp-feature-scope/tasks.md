@@ -83,13 +83,14 @@ exchange trading in this feature.
 
 **Independent Test**: Emergency pause + credentials + fail-closed called out as In-MVP safety_critical; screens/modules point to them
 
-- [ ] T014 [P] [US3] Tag In-MVP OpenAPI operations with `x-mvp: true` in `packages/contracts/openapi/openapi.yaml` for auth, accounts, strategies, market, positions, pnl, kill-switch, alerts, reports used by matrix
-- [ ] T015 [P] [US3] Mark clearly Deferred-related model promote paths with `x-mvp: false` in `packages/contracts/openapi/openapi.yaml` where present
-- [ ] T016 [US3] Add paper-day operator checklist section to `docs/shared/mvp-capability-matrix.md` (connect → run → pause → review) referencing FR-002/US3
-- [ ] T017 [P] [US3] Update `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/screens/kill-switch.md` to state L1 pause is In-MVP mandatory and always visible
-- [ ] T018 [P] [US3] Update `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/screens/account-api-keys.md` with masked credentials + no full reveal after save
-- [ ] T019 [P] [US3] Update `BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/modules/risk-management.md` noting fail-closed entries are In-MVP (docs-only until implement feature)
-- [ ] T020 [US3] Run `scripts/validate-contracts.ps1` after OpenAPI tag edits; fix YAML if validation fails
+- [x] T014 [P] [US3] Tag In-MVP OpenAPI operations with `x-mvp: true` in `packages/contracts/openapi/openapi.yaml` for auth, accounts, strategies, market, positions, pnl, kill-switch, alerts, reports used by matrix
+- [x] T015 [P] [US3] Mark clearly Deferred-related model promote paths with `x-mvp: false` in `packages/contracts/openapi/openapi.yaml` where present
+- [x] T016 [US3] Add paper-day operator checklist section to `docs/shared/mvp-capability-matrix.md` (connect → run → pause → review) referencing FR-002/US3
+- [x] T017 [P] [US3] Update `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/screens/kill-switch.md` to state L1 pause is In-MVP mandatory and always visible
+- [x] T018 [P] [US3] Update `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/screens/account-api-keys.md` with masked credentials + no full reveal after save
+- [x] T019 [P] [US3] Update `BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/modules/risk-management.md` noting fail-closed entries are In-MVP (docs-only until implement feature)
+- [x] T020 [US3] Run `scripts/validate-contracts.ps1` after OpenAPI tag edits; fix YAML if validation fails
+  - Noted 2026-07-22: governance validator → **RESULT: PASS**
 
 **Checkpoint**: Safety controls for paper day are unambiguous in shared + lane docs
 
@@ -101,10 +102,10 @@ exchange trading in this feature.
 
 **Independent Test**: Stakeholders see AI auto-retrain, no-code, multi-user SaaS deferred with phase tags
 
-- [ ] T021 [US4] Ensure Deferred table in `docs/shared/mvp-capability-matrix.md` includes phase_return column (phase-2/3/4)
-- [ ] T022 [P] [US4] Add explicit “Out of MVP” callout to `BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/modules/ai-training.md` pointing to deferred matrix ids
-- [ ] T023 [P] [US4] Add explicit “Out of MVP” callout to `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/screens/ai-model-center.md` and `strategy-builder.md`
-- [ ] T024 [US4] Note in `docs/shared/release-gates.md` that Phase 4 multi-user remains legally gated and is Deferred in MVP matrix
+- [x] T021 [US4] Ensure Deferred table in `docs/shared/mvp-capability-matrix.md` includes phase_return column (phase-2/3/4)
+- [x] T022 [P] [US4] Add explicit “Out of MVP” callout to `BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/modules/ai-training.md` pointing to deferred matrix ids
+- [x] T023 [P] [US4] Add explicit “Out of MVP” callout to `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/screens/ai-model-center.md` and `strategy-builder.md`
+- [x] T024 [US4] Note in `docs/shared/release-gates.md` that Phase 4 multi-user remains legally gated and is Deferred in MVP matrix
 
 **Checkpoint**: US4 acceptance scenarios covered by published Deferred list
 
@@ -114,8 +115,8 @@ exchange trading in this feature.
 
 - [x] T025 [P] Update root `README.md` “Design & architecture” table with link to `docs/shared/mvp-capability-matrix.md`
 - [x] T026 Align `specs/001-mvp-feature-scope/contracts/mvp-capability-matrix.example.yaml` with final `docs/shared/mvp-capability-matrix.yaml` (same version)
-- [ ] T027 Execute remaining steps in `specs/001-mvp-feature-scope/quickstart.md` and mark checklist in `specs/001-mvp-feature-scope/checklists/requirements.md` notes that plan/tasks ready for implement
-- [ ] T028 Set `specs/001-mvp-feature-scope/spec.md` Status from Draft to Planned (or Ready for implement) after owner skim
+- [x] T027 Execute remaining steps in `specs/001-mvp-feature-scope/quickstart.md` and mark checklist in `specs/001-mvp-feature-scope/checklists/requirements.md` notes that plan/tasks ready for implement
+- [x] T028 Set `specs/001-mvp-feature-scope/spec.md` Status from Draft to Planned (or Ready for implement) after owner skim
 
 ---
 

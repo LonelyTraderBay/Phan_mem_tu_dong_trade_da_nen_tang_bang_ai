@@ -45,6 +45,10 @@ Timeout ack → UNKNOWN (no double order); Risk down → 0 orders; Vault down �
 
 ### Phase 4 → multi-user
 
+> **MVP matrix:** `multi-user-saas` is **Deferred (phase-4)** and remains **legally gated**.
+> Do not implement multi-tenant third-party capital without legal sign-off + Owner amend of the matrix.
+
 - [ ] Legal sign-off profile (b) or (c)  
 - [ ] Tenant isolation tests PASS  
 - [ ] Product ToS + data classification
+- [ ] Owner amend MVP matrix Deferred → In-MVP (if ever)

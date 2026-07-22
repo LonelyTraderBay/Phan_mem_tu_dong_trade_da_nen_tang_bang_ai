@@ -1,0 +1,15 @@
+---
+description: Khôi phục sau checkout sai / file mất / quay commit cũ
+alwaysApply: false
+---
+
+# Git Recovery
+
+Dùng khi user thao tác sai trên máy, file biến mất sau checkout, muốn quay lại commit cũ, hoặc khôi phục từ GitHub.
+
+## An toàn
+
+- Không `reset --hard` / force push trừ khi user xác nhận từng lệnh.
+- Ưu tiên `git reflog`, `git stash`, `git checkout -- path`, restore từ remote.
+- Giải thích rủi ro mất uncommitted work trước khi chạy lệnh phá hủy.
+- Khôi phục từ GitHub: `fetch` + checkout file/branch; không đoán SHA.

@@ -29,6 +29,12 @@ Attach before/after snippets or link a PR to `packages/contracts`.
 
 Which environment / phase may consume this (1–4). Any gate impact?
 
+## Change class
+
+- [ ] **Additive public** (path/field/event mới) — vẫn cần Owner approve trước khi BE/FE code  
+- [ ] **Breaking** — major bump + dual-publish / deprecation window  
+- [ ] **Docs-only** (không đổi wire contract)
+
 ## Breaking?
 
 - [ ] No (additive, same major)  

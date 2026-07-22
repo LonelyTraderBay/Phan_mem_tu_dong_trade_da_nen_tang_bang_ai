@@ -22,10 +22,12 @@ scripts/
 | Doc | Role |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Luật thực thi bắt buộc cho mọi AI |
+| [agent-assignment.yaml](docs/shared/agent-assignment.yaml) | Assignment máy đọc — chỉ id `active` được Owner gọi |
 | [MVP capability matrix](docs/shared/mvp-capability-matrix.md) | In-MVP vs Deferred + lane ownership |
+| [Governance CI](.github/workflows/governance.yml) | Ép contracts/matrix/rules trên mọi PR |
 | [BE/FE split prep design](docs/superpowers/specs/2026-07-22-be-fe-split-prep-design.md) | Thiết kế tách ownership |
 | [Architecture INDEX](docs/architecture/INDEX.md) | Con trỏ tài liệu |
-| [Blueprint v2.1](docs/architecture/Kien-truc-Bot-Auto-Trade-AI-v2-Enterprise.md) | Blueprint đầy đủ (tham chiếu) |
+| [Blueprint v2.1](docs/architecture/Kien-truc-Bot-Auto-Trade-AI-v2-Enterprise.md) | Tham chiếu — **không** phải backlog tự code |
 
 ## Ownership
 

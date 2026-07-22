@@ -1,0 +1,16 @@
+---
+description: Repo trống / chưa remote / PR Base-Head blank
+alwaysApply: false
+---
+
+# Git Empty Repo
+
+Dùng khi repo trống, chưa có remote, chưa có main, PR lỗi Base/Head sha blank, hoặc No commits between branches.
+
+## Checklist
+
+1. Có commit trên branch chưa?  
+2. Remote `origin` đúng chưa?  
+3. Default branch tồn tại trên remote chưa?  
+4. Push `-u` trước khi mở PR.  
+5. Không bịa URL PR khi `gh` fail.  

@@ -17,9 +17,10 @@ Canonical blueprint (do not duplicate here):
 
 1. [AGENTS.md](../../AGENTS.md) + constitution  
 2. [MVP capability matrix](../shared/mvp-capability-matrix.md) — In-MVP vs Deferred  
-3. Shared: API overview, auth/SoD, error model, release gates  
-4. Lane của bạn (`BE_Bot_Auto_Trade_AI_Tu_Hoc/docs` hoặc `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs`)  
-5. Blueprint chỉ khi task trỏ section cụ thể
+3. [agent-assignment.yaml](../shared/agent-assignment.yaml) — chỉ id `active` được Owner gọi  
+4. Shared: API overview, auth/SoD, error model, release gates  
+5. Lane của bạn (`BE_Bot_Auto_Trade_AI_Tu_Hoc/docs` hoặc `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs`)  
+6. Blueprint **chỉ khi** task trỏ section cụ thể (file có banner cảnh báo AI)
 
 ## Design prep
 

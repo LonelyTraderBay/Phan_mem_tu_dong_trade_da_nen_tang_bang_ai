@@ -1,0 +1,14 @@
+---
+description: An toàn agent — không mở rộng scope, không phá hủy, không secret
+alwaysApply: true
+---
+
+# Agent Safety
+
+- Chỉ làm đúng việc user yêu cầu. Không mở rộng scope, không “tiện tay” commit/push/deploy.
+- Không chắc → **dừng và hỏi**. Không đoán remote, branch, secret, hay lệnh phá hủy.
+- Không chạy lệnh phá hủy trừ khi user xác nhận rõ từng lệnh: `reset --hard`, force push, xóa remote branch, xóa dữ liệu.
+- Không sửa git config.
+- Không commit/push secret (`.env`, key, token, credential, private key).
+- Không bịa kết quả lệnh, URL PR, hay trạng thái git.
+- Trả lời ngắn, đúng trọng tâm; ưu tiên tiếng Việt nếu user đang dùng tiếng Việt.

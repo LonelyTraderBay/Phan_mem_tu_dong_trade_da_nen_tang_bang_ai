@@ -1,5 +1,5 @@
 ---
-description: Ép AI tuân constitution, matrix MVP, tasks, contracts — không đoán code
+description: Ép AI tuân constitution, matrix MVP, assignment, contracts — không đoán code
 alwaysApply: true
 ---
 
@@ -8,20 +8,21 @@ alwaysApply: true
 ## Trước mọi thay đổi code
 
 1. Đọc / tuân `.specify/memory/constitution.md` và `AGENTS.md`.
-2. Chỉ làm **task ID được user giao** trong `specs/**/tasks.md`. Không tự mở rộng.
+2. Chỉ làm assignment/`task` **active được Owner gọi tên** trong `docs/shared/agent-assignment.yaml` và `specs/**/tasks.md`.
 3. Phạm vi sản phẩm: chỉ **In-MVP** trong `docs/shared/mvp-capability-matrix.md`. Cấm Deferred trừ Owner amend.
-4. Mọi REST/WS/event/RBAC public MUST có trong `packages/contracts` trước khi implement. Thiếu → dừng + RFC `docs/shared/rfcs/`.
+4. Mọi REST/WS/event/RBAC public MUST có trong `packages/contracts` trước khi implement. Thiếu → dừng + RFC.
 5. Ownership:
    - Backend AI: chỉ `BE_Bot_Auto_Trade_AI_Tu_Hoc/`
    - Frontend AI: chỉ `FE_Bot_Auto_Trade_AI_Tu_Hoc/`
 6. Không commit secret. Không FE tính P&L/risk làm truth. Không FE nối Kafka/DB.
-7. Blueprint kiến trúc chỉ đọc khi task chỉ định section — không “đọc hết rồi code hết”.
-8. Xong task được giao → dừng lại; không tiện tay làm task kế.
+7. Blueprint chỉ đọc khi task chỉ định section — không “đọc hết rồi code hết”.
+8. Chạy `scripts/validate-contracts.ps1` (governance) trước khi tuyên bố contracts/API sẵn sàng.
+9. Xong việc được giao → dừng; không tiện tay làm task kế.
 
 ## Thứ tự ưu tiên
 
-constitution → AGENTS.md → MVP matrix → tasks được assign → packages/contracts → HANDOFF lane → docs module/screen → blueprint (tham chiếu).
+constitution → AGENTS.md → MVP matrix → agent-assignment → tasks được assign → packages/contracts → HANDOFF lane → docs module/screen → blueprint (tham chiếu).
 
 ## Speckit
 
-Không implement nghiệp vụ trading khi chưa có plan/tasks tương ứng. Không bỏ Constitution Check trong plan.
+Không implement nghiệp vụ trading khi chưa có plan/tasks + assignment active. Không bỏ Constitution Check trong plan.

@@ -1,5 +1,8 @@
 # Risk Management
 
+> **In-MVP (docs until trading implement):** Fail-closed entries when risk unavailable —
+> matrix id `fail-closed-entries` (`docs-only:risk-fail-closed`). Constitution II.
+
 **Blueprint:** Phần 03 Risk; **Phần 03D** (limits + kill-switch + SoD).
 
 ## Responsibility
@@ -12,8 +15,8 @@ Core Trading Phase 1 — **never** optional or stubbed away in live paths.
 
 ## Interfaces
 
-- In: Strategy sync RPC; Gateway kill-switch / limit APIs  
-- Out: approve/reject; events `risk.limit_breached`, `kill_switch.*`  
+- In: Strategy sync RPC; Gateway kill-switch / limit APIs
+- Out: approve/reject; events `risk.limit_breached`, `kill_switch.*`
 - Emits SEV on auto L2+
 
 ## Fail-closed notes

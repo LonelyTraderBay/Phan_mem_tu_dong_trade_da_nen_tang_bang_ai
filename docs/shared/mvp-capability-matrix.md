@@ -98,6 +98,21 @@ Docs-only (không cần OpenAPI mới cho MVP matrix):
 3. **In-MVP → Deferred:** Cần Owner approve (có thể làm hẹp scope khẩn).
 4. **Cấm:** AI tự thêm capability In-MVP hoặc implement Deferred vì “có trong blueprint”.
 5. **Đồng bộ:** Mọi sửa Markdown **MUST** cập nhật `mvp-capability-matrix.yaml` (và example trong specs nếu còn dùng).
+6. **Máy ép:** `scripts/validate_governance.py` FAIL nếu `contract_refs` không có trong OpenAPI `operationId`.
+
+---
+
+## Paper-day operator checklist (In-MVP)
+
+Thứ tự tối thiểu cho một ngày paper (FR-002 / US3) — **không** yêu cầu MT5, no-code, hay AI promote:
+
+1. **Connect** — auth (`operator-auth`) → lưu credentials paper đã mask (`broker-credentials`)
+2. **Configure & run** — simple strategy start (`simple-strategy-run`) + thấy market (`paper-market-visibility`)
+3. **Monitor** — positions/P&L server-truth (`positions-pnl`) + activity (`activity-list`) + alerts (`basic-alerts`)
+4. **Pause** — emergency L1 pause luôn sẵn (`emergency-pause`); fail-closed nếu risk down (`fail-closed-entries`)
+5. **Review** — history (`history-review`)
+
+Nếu bất kỳ bước nào thiếu contract: **dừng** → RFC → cập nhật OpenAPI.
 
 ---
 
@@ -105,7 +120,7 @@ Docs-only (không cần OpenAPI mới cho MVP matrix):
 
 1. `.specify/memory/constitution.md`  
 2. `AGENTS.md` (repo root)  
-3. This matrix  
+3. This matrix + `docs/shared/agent-assignment.yaml`  
 4. Only assigned IDs in `specs/.../tasks.md`  
 5. `packages/contracts`  
 6. Lane HANDOFF  
