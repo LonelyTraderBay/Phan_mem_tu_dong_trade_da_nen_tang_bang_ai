@@ -47,9 +47,10 @@ Governance được **ép bằng máy**: `scripts/validate_governance.py` + CI `
 
 ## Ưu tiên hiện tại
 
-1. Tôn trọng matrix + OpenAPI MVP stubs đã có (`x-mvp: true`)
-2. Không implement trading E2E / broker thật cho đến Speckit feature + assignment `TRADING-E2E` = active
-3. Speckit: specify → plan → tasks → implement → converge
+1. Tôn trọng matrix + OpenAPI MVP stubs (`x-mvp: true`)
+2. Parallel paper stubs: `docs/shared/parallel-dispatch-phase1.md` — assignment `P1-BE-PAPER-STUB` + `P1-FE-PAPER-STUB`
+3. Không mở `TRADING-E2E` (broker thật) cho đến Owner set active
+4. Speckit: specify → plan → tasks → implement → converge
 
 ## Khi không chắc
 

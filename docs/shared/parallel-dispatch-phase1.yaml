@@ -1,0 +1,172 @@
+# Machine-readable parallel dispatch (Phase 1 paper stub)
+# Parent Cursor agent: spawn at most one BE + one FE task per wave.
+version: "1.0.0"
+updated_at: "2026-07-22"
+assignment_be: P1-BE-PAPER-STUB
+assignment_fe: P1-FE-PAPER-STUB
+trading_e2e: blocked
+deferred_forbidden:
+  - ai-auto-retrain-promote
+  - no-code-builder
+  - multi-user-saas
+  - mt5-forex-adapter
+  - deep-learning-primary
+  - postModelPromote
+
+waves:
+  - id: 1
+    parallel:
+      - task_id: P1-BE-01
+        lane: backend
+        matrix: []
+        contract_refs: [getHealth, getReady]
+        depends_on: []
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Gateway health/ready + /v1 router shell
+      - task_id: P1-FE-01
+        lane: frontend
+        matrix: []
+        contract_refs: []
+        depends_on: []
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Typed API client from OpenAPI; shared Error/501 UX
+
+  - id: 2
+    parallel:
+      - task_id: P1-BE-02
+        lane: backend
+        matrix: [operator-auth]
+        contract_refs: [postAuthLogin, postAuthRefresh, postAuthLogout]
+        depends_on: [P1-BE-01]
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Auth stubs matching OpenAPI Error model
+      - task_id: P1-FE-02
+        lane: frontend
+        matrix: [operator-auth]
+        contract_refs: [postAuthLogin, postAuthRefresh, postAuthLogout]
+        depends_on: [P1-FE-01]
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Login/logout UI; safe token storage
+
+  - id: 3
+    parallel:
+      - task_id: P1-BE-03
+        lane: backend
+        matrix: [broker-credentials]
+        contract_refs: [postAccounts, postAccountApiKeys]
+        depends_on: [P1-BE-02]
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Accounts + masked API keys; never log secrets
+      - task_id: P1-FE-03
+        lane: frontend
+        matrix: [broker-credentials]
+        contract_refs: [postAccounts, postAccountApiKeys]
+        depends_on: [P1-FE-02]
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Accounts form; mask after save
+
+  - id: 4
+    parallel:
+      - task_id: P1-BE-04
+        lane: backend
+        matrix: [simple-strategy-run]
+        contract_refs: [getStrategies, postStrategies, patchStrategy]
+        depends_on: [P1-BE-02]
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Simple strategy stub status machine; no exchange worker
+      - task_id: P1-FE-04
+        lane: frontend
+        matrix: [simple-strategy-run]
+        contract_refs: [getStrategies, postStrategies, patchStrategy]
+        depends_on: [P1-FE-02]
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Form-based strategy UI only; no no-code builder
+
+  - id: 5
+    parallel:
+      - task_id: P1-BE-05
+        lane: backend
+        matrix: [paper-market-visibility]
+        contract_refs: [getMarketSymbols, getMarketCandles]
+        depends_on: [P1-BE-01]
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Market symbols/candles fixture or mock
+      - task_id: P1-FE-05
+        lane: frontend
+        matrix: [paper-market-visibility]
+        contract_refs: [getMarketSymbols, getMarketCandles]
+        depends_on: [P1-FE-01]
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Market UI with mandatory stale handling
+
+  - id: 6
+    parallel:
+      - task_id: P1-BE-06
+        lane: backend
+        matrix: [positions-pnl, activity-list, history-review]
+        contract_refs: [getPositions, getPnlSummary, getReportsTrades]
+        depends_on: [P1-BE-04]
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Server-side positions/PnL/trades read stubs
+      - task_id: P1-FE-06
+        lane: frontend
+        matrix: [positions-pnl, activity-list]
+        contract_refs: [getPositions, getPnlSummary, getReportsTrades]
+        depends_on: [P1-FE-02]
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Display-only positions/PnL/activity
+
+  - id: 7
+    parallel:
+      - task_id: P1-BE-07
+        lane: backend
+        matrix: [emergency-pause, basic-alerts]
+        contract_refs: [getKillSwitchStatus, postKillSwitch, getAlerts]
+        depends_on: [P1-BE-02]
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: L1 kill-switch stub + alerts list
+      - task_id: P1-FE-07
+        lane: frontend
+        matrix: [emergency-pause, basic-alerts]
+        contract_refs: [getKillSwitchStatus, postKillSwitch, getAlerts]
+        depends_on: [P1-FE-02]
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Always-visible L1 KillSwitchBar + alerts inbox
+
+  - id: 8
+    parallel:
+      - task_id: P1-BE-08
+        lane: backend
+        matrix: [fail-closed-entries]
+        contract_refs: ["docs-only:risk-fail-closed"]
+        depends_on: [P1-BE-04, P1-BE-07]
+        allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: Fail-closed guard + unit test when risk unavailable
+      - task_id: P1-FE-08
+        lane: frontend
+        matrix: [history-review]
+        contract_refs: [getReportsTrades]
+        depends_on: [P1-FE-06]
+        allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+        summary: History/reports filter + export/copy summary
+
+  - id: 9
+    parallel: []
+    parent_only: true
+    summary: Paper-day smoke checklist then STOP; do not activate TRADING-E2E
