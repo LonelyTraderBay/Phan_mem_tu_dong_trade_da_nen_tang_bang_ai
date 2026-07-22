@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
-from gateway import account_store, auth_store, strategy_store
+from gateway import account_store, auth_store, risk_guard, strategy_store
 from gateway.deps import require_auth
 from gateway.errors import ErrorDetail, error_response
 
@@ -101,7 +101,11 @@ def patch_strategy(
             message="At least one field is required",
             details=[ErrorDetail(field="body", reason="min_properties")],
         )
-    # Stub: any transition among draft|active|paused|stopped is allowed.
+    # Activate = stub entry path: fail-closed when risk unavailable (P1-BE-08).
+    if "status" in fields_set and body.status == "active":
+        risk_guard.ensure_entry_allowed()
+
+    # Stub: any transition among draft|active|paused|stopped is allowed when risk up.
     updated = strategy_store.patch_strategy(
         str(strategy_id),
         name=body.name if "name" in fields_set else None,
