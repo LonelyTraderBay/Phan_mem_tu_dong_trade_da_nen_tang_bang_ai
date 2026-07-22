@@ -2,7 +2,7 @@ version: "1.3.0"
 feature: null
 updated_at: "2026-07-23"
 active_assignment: null
-# Last Owner: Active LIVE-VENUE-ADAPTER — Binance mainnet ≤5% NAV LIVE_NAV_QUOTE=100000.
+# Last Owner: LIVE-SMOKE-VERIFY complete 2026-07-23 — mock pytest PASS; no real mainnet.
 policy: >
   AI MUST only work on assignment ids with status=active that the Owner
   explicitly named in chat. status=blocked means do not start. status=done
@@ -21,6 +21,7 @@ priority_queue:
   - ENTERPRISE-CI-EVIDENCE
   - PAPER-FE-POLISH
   - LIVE-VENUE-ADAPTER
+  - LIVE-SMOKE-VERIFY
 assignments:
   - id: GOV-HARDEN-2026-07-22
     title: Enterprise governance hardening
@@ -291,3 +292,19 @@ assignments:
       LIVE_NAV_QUOTE=100000, Phase-2 Pass recorded, contract-first.
       Delivered binance_mainnet host allowlist + notional cap + env gates.
       No secrets committed; LIVE_* default off in .env.example.
+
+  - id: LIVE-SMOKE-VERIFY
+    title: Verify live adapter/capital tests (mock only; no real mainnet)
+    lane: backend
+    status: done
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/tests/"
+      - "docs/shared/agent-assignment.yaml"
+      - "AGENTS.md"
+    forbidden_paths:
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+    notes: >
+      Done 2026-07-23: pytest test_binance_mainnet_adapter +
+      test_prod_live_capital → 9 passed (httpx MockTransport only).
+      No real mainnet HTTP; LIVE_* remains default off; no secrets.
