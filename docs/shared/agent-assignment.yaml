@@ -1,100 +1,58 @@
-version: "1.1.0"
-feature: "001-mvp-feature-scope"
+version: "1.2.0"
+feature: "002-paper-trading-e2e"
 updated_at: "2026-07-22"
 policy: >
   AI MUST only work on assignment ids with status=active that the Owner
   explicitly named in chat. status=blocked means do not start. status=done
-  means do not reopen without Owner request. For Phase-1 parallel stubs use
-  docs/shared/parallel-dispatch-phase1.md (+ .yaml) and spawn at most one BE
-  and one FE task per wave.
+  means do not reopen without Owner request. Spawn at most one BE and one FE
+  task in parallel unless Owner says otherwise. Contract-first; In-MVP only.
 assignments:
   - id: GOV-HARDEN-2026-07-22
-    title: Enterprise governance hardening (OpenAPI MVP stubs, CI, rules, validators)
+    title: Enterprise governance hardening
     lane: shared
     status: done
-    allowed_paths:
-      - "AGENTS.md"
-      - ".cursor/rules/"
-      - ".github/"
-      - ".gitleaks.toml"
-      - ".gitignore"
-      - "packages/contracts/"
-      - "scripts/"
-      - "docs/shared/"
-      - "docs/architecture/"
-      - "README.md"
-      - "specs/001-mvp-feature-scope/"
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-    forbidden_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/services/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/web/"
-    notes: "Completed 2026-07-22 — governance CI + MVP OpenAPI stubs"
+    allowed_paths: ["AGENTS.md", ".cursor/rules/", ".github/", "packages/contracts/", "scripts/", "docs/shared/"]
+    notes: "Completed"
 
   - id: T014-T028
-    title: MVP matrix paper-day / deferred doc tasks (feature 001)
+    title: MVP matrix docs (001)
     lane: shared
     status: done
-    allowed_paths:
-      - "packages/contracts/openapi/"
-      - "docs/shared/"
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "specs/001-mvp-feature-scope/"
-    notes: "Feature 001 scope docs complete"
+    allowed_paths: ["specs/001-mvp-feature-scope/", "docs/shared/"]
+    notes: "Completed"
 
   - id: P1-BE-PAPER-STUB
-    title: Phase-1 BE paper stubs (In-MVP only; parallel dispatch)
+    title: Phase-1 BE paper stubs
     lane: backend
-    status: active
-    allowed_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
-    forbidden_paths:
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
-      - "packages/contracts/"
-    dispatch_file: "docs/shared/parallel-dispatch-phase1.yaml"
-    task_ids:
-      - P1-BE-01
-      - P1-BE-02
-      - P1-BE-03
-      - P1-BE-04
-      - P1-BE-05
-      - P1-BE-06
-      - P1-BE-07
-      - P1-BE-08
-    notes: >
-      Owner-activated for Cursor parallel BE subagents. Implement OpenAPI
-      stubs only; no live broker; no Deferred. Do not edit contracts without RFC.
+    status: done
+    allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    notes: "Waves P1-BE-01..08 complete — superseded by TRADING-E2E for new work"
 
   - id: P1-FE-PAPER-STUB
-    title: Phase-1 FE paper stubs (In-MVP only; parallel dispatch)
+    title: Phase-1 FE paper stubs
     lane: frontend
-    status: active
-    allowed_paths:
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
-    forbidden_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
-      - "packages/contracts/"
-    dispatch_file: "docs/shared/parallel-dispatch-phase1.yaml"
-    task_ids:
-      - P1-FE-01
-      - P1-FE-02
-      - P1-FE-03
-      - P1-FE-04
-      - P1-FE-05
-      - P1-FE-06
-      - P1-FE-07
-      - P1-FE-08
-    notes: >
-      Owner-activated for Cursor parallel FE subagents. Bind existing OpenAPI
-      only; handle 501; no client PnL truth; no Deferred UI as live.
+    status: done
+    allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    notes: "Waves P1-FE-01..08 complete — superseded by TRADING-E2E for new work"
 
   - id: TRADING-E2E
-    title: Full paper broker trading implementation
+    title: Paper trading E2E (Speckit 002)
     lane: both
-    status: blocked
+    status: active
+    feature_dir: "specs/002-paper-trading-e2e"
+    tasks_file: "specs/002-paper-trading-e2e/tasks.md"
     allowed_paths:
       - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
       - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
       - "packages/contracts/"
-    notes: "Still blocked — paper stub ≠ live/paper broker E2E"
+      - "specs/002-paper-trading-e2e/"
+      - "docs/shared/"
+    forbidden_paths: []
+    task_ids_prefix: "T"
+    notes: >
+      Owner-activated 2026-07-22. Paper/testnet only. In-MVP matrix only.
+      No Deferred (AI promote, no-code, multi-user SaaS, MT5-first, DL-primary).
+      Start at T001; BE/FE parallel per tasks.md. RFC before inventing public API fields.
+      Do not implement live capital.

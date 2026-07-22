@@ -19,8 +19,9 @@ Ownership: **Shared (RFC)**. Both BE and FE consume this layer; neither owns uni
 | [mvp-capability-matrix.md](./mvp-capability-matrix.md) | **Phạm vi Phase 1** In-MVP vs Deferred + lane ownership |
 | [mvp-capability-matrix.yaml](./mvp-capability-matrix.yaml) | Bản máy của matrix (canonical) |
 | [agent-assignment.yaml](./agent-assignment.yaml) | Task/lane được phép cho AI (machine-readable) |
-| [parallel-dispatch-phase1.md](./parallel-dispatch-phase1.md) | Bảng giao BE∥FE phase đầu (In-MVP stubs) |
-| [parallel-dispatch-phase1.yaml](./parallel-dispatch-phase1.yaml) | Dispatch máy cho Cursor/subagent |
+| [parallel-dispatch-phase1.md](./parallel-dispatch-phase1.md) | Bảng giao BE∥FE stubs (baseline, đã done) |
+| [parallel-dispatch-phase1.yaml](./parallel-dispatch-phase1.yaml) | Dispatch máy stubs |
+| [../../specs/002-paper-trading-e2e/](../../specs/002-paper-trading-e2e/) | **Active** paper trading E2E Speckit feature |
 | [api-overview.md](./api-overview.md) | REST / WS / events split |
 | [auth-rbac-sod.md](./auth-rbac-sod.md) | Roles + dual-control |
 | [error-model.md](./error-model.md) | Error JSON schema |
