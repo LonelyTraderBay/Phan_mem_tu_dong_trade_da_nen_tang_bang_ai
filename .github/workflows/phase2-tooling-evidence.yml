@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway
+        working-directory: BE_Bot_Auto_Trade_AI_Tu_hoc/services/gateway
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,8 +56,8 @@ jobs:
         with:
           name: phase2-tooling-evidence
           path: |
-            BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/artifacts/phase2-evidence/evidence-latest.json
-            BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/artifacts/phase2-evidence/evidence-latest.md
-            BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/artifacts/phase2-evidence/junit-drills.xml
+            BE_Bot_Auto_Trade_AI_Tu_hoc/services/gateway/artifacts/phase2-evidence/evidence-latest.json
+            BE_Bot_Auto_Trade_AI_Tu_hoc/services/gateway/artifacts/phase2-evidence/evidence-latest.md
+            BE_Bot_Auto_Trade_AI_Tu_hoc/services/gateway/artifacts/phase2-evidence/junit-drills.xml
           if-no-files-found: warn
           retention-days: 30
