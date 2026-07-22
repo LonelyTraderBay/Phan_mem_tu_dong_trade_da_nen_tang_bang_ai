@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trade-ai.local/schemas/reconciliation.break_detected.v1.json",
+  "title": "reconciliation.break_detected",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "schema_version",
+    "produced_at_utc",
+    "producer_service",
+    "account_id",
+    "break_type",
+    "internal_value",
+    "broker_value",
+    "status"
+  ],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "schema_version": { "type": "integer" },
+    "produced_at_utc": { "type": "string" },
+    "producer_service": { "type": "string" },
+    "account_id": { "type": "string" },
+    "break_type": { "type": "string" },
+    "internal_value": { "type": "number" },
+    "broker_value": { "type": "number" },
+    "status": { "type": "string" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trade-ai.local/schemas/signal.generated.v1.json",
+  "title": "signal.generated",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "schema_version",
+    "produced_at_utc",
+    "producer_service",
+    "signal_id",
+    "symbol",
+    "model_id",
+    "model_version",
+    "probability_calibrated"
+  ],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "schema_version": { "type": "integer" },
+    "produced_at_utc": { "type": "string" },
+    "producer_service": { "type": "string" },
+    "signal_id": { "type": "string" },
+    "symbol": { "type": "string" },
+    "model_id": { "type": "string" },
+    "model_version": { "type": "string" },
+    "probability_calibrated": { "type": "number" }
+  },
+  "additionalProperties": true
+}

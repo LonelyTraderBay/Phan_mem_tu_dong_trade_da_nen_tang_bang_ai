@@ -1,0 +1,29 @@
+roles:
+  - id: admin
+    description: Broad operations; SoD still applies
+  - id: trader
+    description: Configure strategies; propose risk changes
+  - id: viewer
+    description: Read-only
+  - id: risk_officer
+    description: Approve limits, resumes, capital-sensitive promotes
+  - id: ml_lead
+    description: Retrain and promote models
+  - id: sre
+    description: Ops, break-glass, propose L2 resume
+
+dual_control_actions:
+  - action: risk_limit_change
+    proposer: [trader, admin]
+    approver: [risk_officer]
+  - action: resume_l2_account_plus
+    proposer: [sre, admin]
+    approver: [risk_officer]
+  - action: resume_l3
+    proposer: [admin]
+    approver: [risk_officer]
+  - action: l4_activate_or_resume
+    rule: two_person_admin_and_risk_officer
+  - action: promote_canary_gt_10pct_nav
+    proposer: [ml_lead]
+    approver: [risk_officer]

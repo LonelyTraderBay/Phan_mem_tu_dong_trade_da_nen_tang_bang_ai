@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trade-ai.local/schemas/kill_switch.v1.json",
+  "title": "kill_switch.*",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "schema_version",
+    "produced_at_utc",
+    "producer_service",
+    "scope",
+    "level",
+    "triggered_by",
+    "reason"
+  ],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "schema_version": { "type": "integer" },
+    "produced_at_utc": { "type": "string" },
+    "producer_service": { "type": "string" },
+    "scope": { "type": "string" },
+    "level": { "type": "string", "enum": ["L1", "L2", "L3", "L4"] },
+    "triggered_by": { "type": "string", "enum": ["auto", "manual"] },
+    "reason": { "type": "string" }
+  },
+  "additionalProperties": true
+}

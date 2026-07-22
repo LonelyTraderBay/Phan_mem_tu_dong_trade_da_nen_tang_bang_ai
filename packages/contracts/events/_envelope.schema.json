@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://contracts.bot-auto-trade.local/events/_envelope.schema.json",
+  "title": "EventEnvelope",
+  "description": "Common envelope required on every event-bus message. Subjects allOf this definition.",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "schema_version",
+    "produced_at_utc",
+    "producer_service"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Distributed trace / correlation id"
+    },
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Major schema version for the subject"
+    },
+    "produced_at_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the producer emitted the event (UTC)"
+    },
+    "producer_service": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Logical service name that produced the event"
+    }
+  },
+  "definitions": {
+    "envelope": {
+      "type": "object",
+      "required": [
+        "trace_id",
+        "schema_version",
+        "produced_at_utc",
+        "producer_service"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "produced_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "producer_service": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ohlcv": {
+      "type": "object",
+      "required": ["open", "high", "low", "close", "volume"],
+      "properties": {
+        "open": { "type": "number" },
+        "high": { "type": "number" },
+        "low": { "type": "number" },
+        "close": { "type": "number" },
+        "volume": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

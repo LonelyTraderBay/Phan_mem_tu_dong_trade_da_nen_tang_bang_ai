@@ -1,0 +1,11 @@
+{
+  "type": "event",
+  "channel": "risk.kill_switch",
+  "seq": 42,
+  "payload": {
+    "scope": "global",
+    "level": "L1",
+    "triggered_by": "manual",
+    "reason": "example"
+  }
+}
