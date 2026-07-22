@@ -29,8 +29,9 @@ exchange trading in this feature.
 
 **Purpose**: Confirm feature workspace and baseline validation
 
-- [ ] T001 Verify feature artifacts exist per `specs/001-mvp-feature-scope/quickstart.md` step 1
-- [ ] T002 Run `scripts/validate-contracts.ps1` and record PASS in feature notes or PR description
+- [x] T001 Verify feature artifacts exist per `specs/001-mvp-feature-scope/quickstart.md` step 1
+- [x] T002 Run `scripts/validate-contracts.ps1` and record PASS in feature notes or PR description
+  - Noted 2026-07-22: `scripts/validate-contracts.ps1` → **RESULT: PASS**
 
 ---
 
@@ -38,9 +39,9 @@ exchange trading in this feature.
 
 **Purpose**: Schema + example matrix must be accepted before publishing or lane tagging
 
-- [ ] T003 Finalize `specs/001-mvp-feature-scope/contracts/capability-matrix.schema.json` fields against `specs/001-mvp-feature-scope/data-model.md`
-- [ ] T004 Complete `specs/001-mvp-feature-scope/contracts/mvp-capability-matrix.example.yaml` so every FR-002 In-MVP capability appears with lane + rationale
-- [ ] T005 Ensure Deferred list in example YAML includes AI retrain/promote, no-code builder, multi-user SaaS, MT5, deep-learning primary per FR-005 / US4
+- [x] T003 Finalize `specs/001-mvp-feature-scope/contracts/capability-matrix.schema.json` fields against `specs/001-mvp-feature-scope/data-model.md`
+- [x] T004 Complete `specs/001-mvp-feature-scope/contracts/mvp-capability-matrix.example.yaml` so every FR-002 In-MVP capability appears with lane + rationale
+- [x] T005 Ensure Deferred list in example YAML includes AI retrain/promote, no-code builder, multi-user SaaS, MT5, deep-learning primary per FR-005 / US4
 
 **Checkpoint**: Example matrix reviewable in &lt;15 minutes (SC-001)
 
@@ -52,10 +53,10 @@ exchange trading in this feature.
 
 **Independent Test**: Reviewer can label every listed capability and confirm paper happy-path needs only In-MVP items
 
-- [ ] T006 [US1] Create stakeholder Markdown matrix `docs/shared/mvp-capability-matrix.md` from example YAML (tables: In-MVP and Deferred)
-- [ ] T007 [US1] Add canonical YAML copy `docs/shared/mvp-capability-matrix.yaml` matching the Markdown content and schema rules
-- [ ] T008 [P] [US1] Link matrix from `docs/shared/README.md` and `docs/architecture/INDEX.md`
-- [ ] T009 [US1] Add amendment rule section to `docs/shared/mvp-capability-matrix.md` (owner written approval to move Deferred → In-MVP)
+- [x] T006 [US1] Create stakeholder Markdown matrix `docs/shared/mvp-capability-matrix.md` from example YAML (tables: In-MVP and Deferred)
+- [x] T007 [US1] Add canonical YAML copy `docs/shared/mvp-capability-matrix.yaml` matching the Markdown content and schema rules
+- [x] T008 [P] [US1] Link matrix from `docs/shared/README.md` and `docs/architecture/INDEX.md`
+- [x] T009 [US1] Add amendment rule section to `docs/shared/mvp-capability-matrix.md` (owner written approval to move Deferred → In-MVP)
 
 **Checkpoint**: US1 acceptance scenarios satisfiable from docs alone
 
@@ -67,10 +68,10 @@ exchange trading in this feature.
 
 **Independent Test**: Table shows lane + contract prerequisite for each In-MVP row
 
-- [ ] T010 [US2] Add “Lane ownership” section to `docs/shared/mvp-capability-matrix.md` grouping In-MVP by lane
-- [ ] T011 [P] [US2] Update `BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/HANDOFF-AI.md` with pointer to matrix and rule: do not implement Deferred without owner expand
-- [ ] T012 [P] [US2] Update `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/HANDOFF-AI.md` with pointer to matrix and stub-vs-live UI rules for Both items
-- [ ] T013 [US2] Document Both-item contract prerequisites in `docs/shared/mvp-capability-matrix.md` (list `contract_refs` requiring RFC/tag before code)
+- [x] T010 [US2] Add “Lane ownership” section to `docs/shared/mvp-capability-matrix.md` grouping In-MVP by lane
+- [x] T011 [P] [US2] Update `BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/HANDOFF-AI.md` with pointer to matrix and rule: do not implement Deferred without owner expand
+- [x] T012 [P] [US2] Update `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/HANDOFF-AI.md` with pointer to matrix and stub-vs-live UI rules for Both items
+- [x] T013 [US2] Document Both-item contract prerequisites in `docs/shared/mvp-capability-matrix.md` (list `contract_refs` requiring RFC/tag before code)
 
 **Checkpoint**: Parallel lanes can start without Deferred AI/SaaS blockers (SC-002)
 
@@ -111,8 +112,8 @@ exchange trading in this feature.
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T025 [P] Update root `README.md` “Design & architecture” table with link to `docs/shared/mvp-capability-matrix.md`
-- [ ] T026 Align `specs/001-mvp-feature-scope/contracts/mvp-capability-matrix.example.yaml` with final `docs/shared/mvp-capability-matrix.yaml` (same version)
+- [x] T025 [P] Update root `README.md` “Design & architecture” table with link to `docs/shared/mvp-capability-matrix.md`
+- [x] T026 Align `specs/001-mvp-feature-scope/contracts/mvp-capability-matrix.example.yaml` with final `docs/shared/mvp-capability-matrix.yaml` (same version)
 - [ ] T027 Execute remaining steps in `specs/001-mvp-feature-scope/quickstart.md` and mark checklist in `specs/001-mvp-feature-scope/checklists/requirements.md` notes that plan/tasks ready for implement
 - [ ] T028 Set `specs/001-mvp-feature-scope/spec.md` Status from Draft to Planned (or Ready for implement) after owner skim
 

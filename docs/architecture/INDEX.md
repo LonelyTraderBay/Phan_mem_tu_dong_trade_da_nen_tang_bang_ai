@@ -13,12 +13,15 @@ Canonical blueprint (do not duplicate here):
 | Frontend | [FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/](../../FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/README.md) | Frontend AI |
 | Machine-readable contracts | [packages/contracts/](../../packages/contracts/) | API/WS/events/RBAC |
 
+## Reading order
+
+1. [AGENTS.md](../../AGENTS.md) + constitution  
+2. [MVP capability matrix](../shared/mvp-capability-matrix.md) — In-MVP vs Deferred  
+3. Shared: API overview, auth/SoD, error model, release gates  
+4. Lane của bạn (`BE_Bot_Auto_Trade_AI_Tu_Hoc/docs` hoặc `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs`)  
+5. Blueprint chỉ khi task trỏ section cụ thể
+
 ## Design prep
 
 - [BE/FE split prep design](../superpowers/specs/2026-07-22-be-fe-split-prep-design.md)
-
-## Reading order
-
-1. Shared: API overview, auth/SoD, error model, release gates  
-2. Lane của bạn (`BE_Bot_Auto_Trade_AI_Tu_Hoc/docs` hoặc `FE_Bot_Auto_Trade_AI_Tu_Hoc/docs`)  
-3. Blueprint chỉ khi cần ngữ cảnh sâu
+- [MVP matrix](../shared/mvp-capability-matrix.md)
