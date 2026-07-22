@@ -40,6 +40,9 @@ npx tsc --noEmit
 6. Set risk unavailable → activate blocked (fail-closed)
 7. Review reports/alerts
 
+**Automated record (T023):** `python scripts/wave9_smoke.py` → **WAVE9_SMOKE PASS** on 2026-07-22
+(positions/trades after activate; L1 alert; fail-closed 503).
+
 ## Out of scope
 
 - Live capital, MT5-first, no-code, AI promote, multi-user SaaS

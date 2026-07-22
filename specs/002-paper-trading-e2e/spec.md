@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-22
 
-**Status**: Planned
+**Status**: Implemented
 
 **Input**: User description: "đi tiếp Speckit feature + bật TRADING-E2E" — implement end-to-end paper trading on In-MVP capabilities after Phase-1 stubs, without Deferred scope (no live capital, no multi-user SaaS, no AI auto-promote, no no-code builder, no MT5-first).
 

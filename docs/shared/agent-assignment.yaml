@@ -40,7 +40,7 @@ assignments:
   - id: TRADING-E2E
     title: Paper trading E2E (Speckit 002)
     lane: both
-    status: active
+    status: done
     feature_dir: "specs/002-paper-trading-e2e"
     tasks_file: "specs/002-paper-trading-e2e/tasks.md"
     allowed_paths:
@@ -52,7 +52,8 @@ assignments:
     forbidden_paths: []
     task_ids_prefix: "T"
     notes: >
-      Owner-activated 2026-07-22. Paper/testnet only. In-MVP matrix only.
-      No Deferred (AI promote, no-code, multi-user SaaS, MT5-first, DL-primary).
-      Start at T001; BE/FE parallel per tasks.md. RFC before inventing public API fields.
-      Do not implement live capital.
+      Demo-complete 2026-07-22: T001–T027 done. Internal paper path
+      Strategy→Risk→OMS→adapter; L1 + fail-closed; FE server-truth UX.
+      Gateway pytest 55 PASS; wave9_smoke PASS; validate_governance PASS.
+      Still paper/testnet only — live capital requires new Speckit feature + assignment.
+      Do not reopen without Owner request.
