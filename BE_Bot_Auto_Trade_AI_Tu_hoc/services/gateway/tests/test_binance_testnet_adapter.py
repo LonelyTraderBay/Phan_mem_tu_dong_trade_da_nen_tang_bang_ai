@@ -66,6 +66,7 @@ def test_assert_allows_testnet_host() -> None:
 
 
 def test_binance_mode_rejects_non_testnet_account(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Live account never uses paper testnet path — hits live gate first."""
     monkeypatch.setenv("PAPER_VENUE_MODE", "binance_testnet")
     acct = account_store.create_account(
         name="live-ish",
@@ -88,7 +89,7 @@ def test_binance_mode_rejects_non_testnet_account(monkeypatch: pytest.MonkeyPatc
             risk_check_id=str(uuid4()),
             trace_id=str(uuid4()),
         )
-    assert exc.value.code == "venue_mismatch"
+    assert exc.value.code == "live_trading_disabled"
 
 
 def test_mock_binance_fill_updates_ledger(monkeypatch: pytest.MonkeyPatch) -> None:

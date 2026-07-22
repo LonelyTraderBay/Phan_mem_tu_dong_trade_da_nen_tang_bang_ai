@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { getLastAccountId, setLastAccountId } from "@/lib/accounts/lastAccountId";
 import type { ApiFailure } from "@/lib/api/client";
 import { hasAccessToken } from "@/lib/auth/tokenStore";
 import {
@@ -124,8 +125,19 @@ export default function DashboardPage() {
       router.replace("/login");
       return;
     }
+    const last = getLastAccountId();
+    if (last) setAccountId(last);
     setReady(true);
   }, [router]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const account = accountId.trim();
+    if (!account) return;
+    void loadAll(account);
+    // Prefill auto-load once when ready.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
+  }, [ready]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -137,6 +149,7 @@ export default function DashboardPage() {
       });
       return;
     }
+    setLastAccountId(account);
     await loadAll(account);
   }
 
@@ -192,8 +205,11 @@ export default function DashboardPage() {
             type="text"
             required
             value={accountId}
-            onChange={(ev) => setAccountId(ev.target.value)}
-            placeholder="uuid"
+            onChange={(ev) => {
+              setAccountId(ev.target.value);
+              if (ev.target.value.trim()) setLastAccountId(ev.target.value);
+            }}
+            placeholder="UUID từ Accounts (prefill session)"
             className="mt-1 w-full rounded border border-neutral-300 bg-white px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
           />
         </div>

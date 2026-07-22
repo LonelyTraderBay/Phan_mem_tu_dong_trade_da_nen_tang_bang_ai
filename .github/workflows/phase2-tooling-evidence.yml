@@ -1,0 +1,63 @@
+# Paper/staging tooling evidence for C-01..C-06 + G-01.
+# tooling_PASS ≠ release-gates Pass. Never auto-ticks gates.
+name: Phase-2 tooling evidence
+
+on:
+  push:
+    branches: [main, "docs/**", "chore/**", "feat/**", "fix/**", "cursor/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  phase2-tooling-evidence:
+    name: Export C-01..C-06 + G-01 evidence
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install gateway + pytest
+        run: pip install -e ".[dev]"
+
+      - name: Export phase-2 tooling evidence
+        run: python scripts/export_phase2_evidence.py
+
+      - name: Assert tooling-only pack (no gate Pass)
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("artifacts/phase2-evidence/evidence-latest.json")
+          pack = json.loads(path.read_text(encoding="utf-8"))
+          summary = pack["summary"]
+          assert pack.get("release_gates_auto_tick") is False, "auto_tick must be false"
+          assert summary.get("gate_pass_count", 0) == 0, "gate_pass_count must be 0"
+          assert summary["tooling_fail"] == 0, f"tooling_FAIL={summary['tooling_fail']}"
+          assert summary["tooling_pass"] == summary["expected"] == 7, summary
+          for drill in pack["drills"]:
+              assert drill["gate_pass"] is False, drill
+              assert drill["status"] == "tooling_PASS", drill
+          print("OK: 7/7 tooling_PASS; gate_pass forbidden")
+          PY
+
+      - name: Upload evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase2-tooling-evidence
+          path: |
+            BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/artifacts/phase2-evidence/evidence-latest.json
+            BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/artifacts/phase2-evidence/evidence-latest.md
+            BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/artifacts/phase2-evidence/junit-drills.xml
+          if-no-files-found: warn
+          retention-days: 30

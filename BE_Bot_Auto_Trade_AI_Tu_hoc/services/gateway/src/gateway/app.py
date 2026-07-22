@@ -6,6 +6,7 @@ System probes live on the app root. MVP business routes mount under /v1.
 from __future__ import annotations
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from gateway.errors import GatewayError, error_response
@@ -20,6 +21,19 @@ app = FastAPI(
         "trade-report, kill-switch, alerts under /v1; paper WebSocket at /ws "
         "(ticket via postWsTicket)."
     ),
+)
+
+# Paper local UI (Next.js :3000) → Gateway :8000. Without this, browsers report
+# "Failed to fetch" on login. Keep origins tight to local FE only.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

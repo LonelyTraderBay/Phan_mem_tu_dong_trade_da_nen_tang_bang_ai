@@ -17,10 +17,27 @@ import {
   type StrategyStatus,
   type StrategyTimeframe,
 } from "@/lib/strategies/types";
+import {
+  getLastAccountId,
+  setLastAccountId,
+} from "@/lib/accounts/lastAccountId";
 import type { ApiFailure } from "@/lib/api/client";
 import { hasAccessToken } from "@/lib/auth/tokenStore";
 
 type MessageKind = "ok" | "err" | "stub";
+
+function statusBadgeClass(status: StrategyStatus): string {
+  if (status === "active") {
+    return "rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold text-emerald-900";
+  }
+  if (status === "paused") {
+    return "rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-950";
+  }
+  if (status === "stopped") {
+    return "rounded bg-neutral-200 px-1.5 py-0.5 text-xs font-semibold text-neutral-800";
+  }
+  return "rounded bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-700";
+}
 
 /**
  * Simple strategy form — getStrategies / postStrategies / patchStrategy.
@@ -32,8 +49,8 @@ export default function StrategiesPage() {
 
   const [accountId, setAccountId] = useState("");
   const [name, setName] = useState("");
-  const [symbol, setSymbol] = useState("");
-  const [timeframe, setTimeframe] = useState<StrategyTimeframe>("1h");
+  const [symbol, setSymbol] = useState("BTCUSDT");
+  const [timeframe, setTimeframe] = useState<StrategyTimeframe>("1m");
   const [createStatus, setCreateStatus] = useState<StrategyStatus | "">("");
   const [maxPositionSize, setMaxPositionSize] = useState("");
   const [stopLossPercent, setStopLossPercent] = useState("");
@@ -44,6 +61,13 @@ export default function StrategiesPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<MessageKind | null>(null);
+
+  function applyAccountId(id: string) {
+    const trimmed = id.trim();
+    setAccountId(trimmed);
+    setListFilterAccountId(trimmed);
+    if (trimmed) setLastAccountId(trimmed);
+  }
 
   const handleFailure = useCallback(
     (result: ApiFailure, context?: { action?: "activate" | "create" | "patch" }) => {
@@ -92,8 +116,35 @@ export default function StrategiesPage() {
       router.replace("/login");
       return;
     }
+    const last = getLastAccountId();
+    if (last) {
+      setAccountId(last);
+      setListFilterAccountId(last);
+    }
     setReady(true);
   }, [router]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const account = listFilterAccountId.trim();
+    if (!account) return;
+    let cancelled = false;
+    void (async () => {
+      setBusy(true);
+      const ok = await refreshList(account);
+      if (cancelled) return;
+      setBusy(false);
+      if (ok) {
+        setMessageKind("ok");
+        setMessage("Đã tải danh sách strategies (Account ID nhớ từ phiên).");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Prefill auto-load once when ready; manual refresh still via form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount load
+  }, [ready]);
 
   async function onCreate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -144,13 +195,11 @@ export default function StrategiesPage() {
     setMessageKind("ok");
     setMessage(`Strategy đã tạo (id: ${result.data.id}, status: ${result.data.status}).`);
     setName("");
-    setSymbol("");
+    setSymbol("BTCUSDT");
     setMaxPositionSize("");
     setStopLossPercent("");
     setCreateStatus("");
-    if (!listFilterAccountId.trim()) {
-      setListFilterAccountId(result.data.account_id);
-    }
+    applyAccountId(result.data.account_id);
     await refreshList(result.data.account_id);
   }
 
@@ -263,9 +312,14 @@ export default function StrategiesPage() {
               type="text"
               required
               value={accountId}
-              onChange={(ev) => setAccountId(ev.target.value)}
+              onChange={(ev) => applyAccountId(ev.target.value)}
+              placeholder="UUID từ Accounts (không gõ chữ ngẫu nhiên)"
               className="mt-1 w-full rounded border border-neutral-300 bg-white px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
             />
+            <p className="mt-1 text-xs text-neutral-500">
+              Prefill từ Account ID gần nhất (session). Đồng bộ luôn với ô list bên
+              dưới. Symbol mặc định <code className="text-xs">BTCUSDT</code>.
+            </p>
           </div>
           <div>
             <label htmlFor="strategy-name" className="block text-sm font-medium">
@@ -398,6 +452,11 @@ export default function StrategiesPage() {
 
       <section className="mt-10">
         <h2 className="text-lg font-medium">2. Danh sách &amp; start / pause / stop</h2>
+        <p className="mt-1 text-xs text-neutral-500">
+          {strategies.length > 0
+            ? `${strategies.length} strategy — active / paused / stopped có màu riêng.`
+            : "Chưa có trong list — Tải lại hoặc tạo mới."}
+        </p>
         <form
           onSubmit={onRefreshList}
           className="mt-4 flex flex-wrap items-end gap-3"
@@ -415,7 +474,7 @@ export default function StrategiesPage() {
               type="text"
               required
               value={listFilterAccountId}
-              onChange={(ev) => setListFilterAccountId(ev.target.value)}
+              onChange={(ev) => applyAccountId(ev.target.value)}
               className="mt-1 w-full rounded border border-neutral-300 bg-white px-3 py-2 font-mono text-xs outline-none focus:border-neutral-500"
             />
           </div>
@@ -439,7 +498,10 @@ export default function StrategiesPage() {
                 key={s.id}
                 className="rounded border border-neutral-200 bg-white px-3 py-3 text-sm"
               >
-                <div className="font-medium">{s.name}</div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{s.name}</span>
+                  <span className={statusBadgeClass(s.status)}>{s.status}</span>
+                </div>
                 <dl className="mt-1 grid gap-0.5 text-neutral-700">
                   <div>
                     <dt className="inline font-medium">id: </dt>
@@ -454,10 +516,6 @@ export default function StrategiesPage() {
                     <dd className="inline">
                       {s.symbol} · {s.timeframe}
                     </dd>
-                  </div>
-                  <div>
-                    <dt className="inline font-medium">status: </dt>
-                    <dd className="inline">{s.status}</dd>
                   </div>
                 </dl>
                 <div className="mt-3 flex flex-wrap gap-2">

@@ -6,8 +6,14 @@ import os
 from typing import Any
 
 from gateway import account_store
-from gateway.trading import binance_testnet, ledger
+from gateway.trading import binance_mainnet, binance_testnet, ledger
+from gateway.trading.binance_mainnet import BinanceMainnetClient, BinanceMainnetError
 from gateway.trading.binance_testnet import BinanceTestnetClient, BinanceTestnetError
+from gateway.trading.live_capital import (
+    LiveCapitalError,
+    assert_live_entry_allowed,
+    assert_notional_within_cap,
+)
 from gateway.ws_hub import publish_sync
 
 DEFAULT_FILL_PRICE = 100.0
@@ -48,6 +54,19 @@ def submit_and_fill(
     strategy_id: str | None = None,
     interval: str = DEFAULT_INTERVAL,
 ) -> dict[str, Any]:
+    account = account_store.get_account(account_id)
+    if account is not None and not account.testnet:
+        return _submit_binance_mainnet(
+            account_id=account_id,
+            symbol=symbol,
+            side=side,
+            quantity=quantity,
+            risk_check_id=risk_check_id,
+            trace_id=trace_id,
+            strategy_id=strategy_id,
+            interval=interval,
+        )
+
     mode = get_venue_mode()
     if mode == "binance_testnet":
         return _submit_binance_testnet(
@@ -142,6 +161,130 @@ def _submit_internal(
     }
 
 
+def _submit_binance_mainnet(
+    *,
+    account_id: str,
+    symbol: str,
+    side: str,
+    quantity: float,
+    risk_check_id: str,
+    trace_id: str,
+    strategy_id: str | None,
+    interval: str,
+) -> dict[str, Any]:
+    account = account_store.get_account(account_id)
+    if account is None:
+        raise VenueAdapterError("not_found", "Account not found for live venue submit")
+    try:
+        policy = assert_live_entry_allowed(
+            testnet=False,
+            exchange=account.exchange,
+        )
+        est_price = resolve_fill_price(symbol, interval=interval)
+        assert_notional_within_cap(
+            notional=float(quantity) * float(est_price),
+            policy=policy,
+        )
+    except LiveCapitalError as exc:
+        raise VenueAdapterError(exc.code, exc.message) from exc
+
+    if not account.credentials:
+        raise VenueAdapterError(
+            "credentials_required",
+            "No API credentials for Binance mainnet submit",
+        )
+
+    cred = account.credentials[0]
+    try:
+        client = BinanceMainnetClient(
+            api_key=cred.api_key,
+            api_secret=cred.api_secret,
+            transport=binance_mainnet.get_test_transport(),
+        )
+        payload = client.place_market_order(
+            symbol=symbol,
+            side=side,
+            quantity=quantity,
+            trace_id=trace_id,
+        )
+    except BinanceMainnetError as exc:
+        raise VenueAdapterError(exc.code, exc.message) from exc
+
+    fill_qty, fill_price = _extract_fill(payload, fallback_qty=quantity)
+    try:
+        assert_notional_within_cap(
+            notional=float(fill_qty) * float(fill_price),
+            policy=policy,
+        )
+    except LiveCapitalError as exc:
+        raise VenueAdapterError(exc.code, exc.message) from exc
+
+    venue_order_id = str(payload.get("orderId") or payload.get("clientOrderId") or "")
+    status = str(payload.get("status") or "filled").lower()
+    if status in ("new", "partially_filled") and fill_qty <= 0:
+        raise VenueAdapterError(
+            "venue_reject",
+            "Binance mainnet order accepted but not filled",
+        )
+
+    order = ledger.record_order(
+        account_id=account_id,
+        symbol=symbol,
+        side=side,
+        quantity=fill_qty,
+        status="filled",
+        risk_check_id=risk_check_id,
+        trace_id=trace_id,
+        strategy_id=strategy_id,
+        venue_order_id=venue_order_id or f"bn-m-{trace_id[:8]}",
+        price=fill_price,
+    )
+    ledger.record_fill(
+        order_id=order["id"],
+        account_id=account_id,
+        symbol=symbol,
+        side=side,
+        quantity=fill_qty,
+        price=fill_price,
+        trace_id=trace_id,
+        strategy_id=strategy_id,
+    )
+    position = ledger.upsert_position_from_fill(
+        account_id=account_id,
+        symbol=symbol,
+        side=side,
+        quantity=fill_qty,
+        price=fill_price,
+        strategy_id=strategy_id,
+    )
+    trade = ledger.record_trade(
+        account_id=account_id,
+        symbol=symbol,
+        side=side,
+        quantity=fill_qty,
+        price=fill_price,
+        strategy_id=strategy_id,
+    )
+    _publish_trading_updates(
+        order=order,
+        position=position,
+        account_id=account_id,
+        symbol=symbol,
+        side=side,
+        quantity=fill_qty,
+        price=fill_price,
+        risk_check_id=risk_check_id,
+        trace_id=trace_id,
+    )
+    return {
+        "order": order,
+        "position": position,
+        "trade": trade,
+        "fill_price": fill_price,
+        "venue": "binance_mainnet",
+    }
+
+
 def _submit_binance_testnet(
     *,
     account_id: str,
@@ -161,6 +304,10 @@ def _submit_binance_testnet(
             "binance_testnet mode requires account.exchange=binance",
         )
     if not account.testnet:
+        try:
+            assert_live_entry_allowed(testnet=False, exchange=account.exchange)
+        except LiveCapitalError as exc:
+            raise VenueAdapterError(exc.code, exc.message) from exc
         raise VenueAdapterError(
             "venue_mismatch",
             "binance_testnet mode requires account.testnet=true (refuse live)",
@@ -327,5 +474,5 @@ def _extract_fill(payload: dict[str, Any], *, fallback_qty: float) -> tuple[floa
 
     raise VenueAdapterError(
         "venue_reject",
-        "Binance testnet response missing fill quantity/price",
+        "Binance response missing fill quantity/price",
     )
