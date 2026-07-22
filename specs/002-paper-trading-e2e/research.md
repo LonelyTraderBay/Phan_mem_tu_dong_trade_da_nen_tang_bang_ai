@@ -24,11 +24,11 @@
 
 **Rationale**: Operator review (US3) needs stable trade history during a paper day.
 
-### D4 — Contracts
+### D4 — Contracts (locked by T003)
 
-**Decision**: Reuse MVP OpenAPI operations already tagged `x-mvp: true`. If order-create public REST is required beyond current stub `POST /v1/orders`, add via **RFC + OpenAPI update** before FE binds.
+**Decision**: Reuse MVP OpenAPI operations already tagged `x-mvp: true`. Paper entry path is **internal** (Strategy→Risk→OMS→adapter). Acceptance via portfolio/report APIs. Gateway `POST /v1/orders` is **not** in OpenAPI → non-contract; FE must not call; remove/quarantine under T004. Public `postOrders` only after future RFC.
 
-**Rationale**: Contract-first; current Gateway may still expose 501 orders stub from scaffold — E2E must either implement that op per schema or RFC an explicit paper-order surface.
+**Rationale**: OpenAPI has no create-order operationId today; inventing FE order API would violate constitution I.
 
 ### D5 — Parallel lanes
 

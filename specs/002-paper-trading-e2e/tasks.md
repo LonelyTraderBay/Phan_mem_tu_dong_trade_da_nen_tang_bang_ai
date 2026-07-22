@@ -14,15 +14,18 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Verify `specs/002-paper-trading-e2e/` artifacts + `.\scripts\validate-contracts.ps1` PASS
-- [ ] T002 [P] Confirm Gateway pytest baseline still green; FE `tsc` green on current branch
+- [x] T001 Verify `specs/002-paper-trading-e2e/` artifacts + `.\scripts\validate-contracts.ps1` PASS
+  - 2026-07-22: all feature artifacts present; `validate_governance.py` → **RESULT: PASS**
+- [x] T002 [P] Confirm Gateway pytest baseline still green; FE `tsc` green on current branch
+  - 2026-07-22: gateway **51 passed**; `tsc --noEmit` **PASS**
 
 ---
 
 ## Phase 2: Foundational (blocking)
 
-- [ ] T003 Decide paper order public surface: implement existing `/v1/orders` stub per OpenAPI **or** RFC additive paper-order ops — document choice in `contracts/README.md`
-- [ ] T004 If RFC needed: land OpenAPI + VERSION policy + Owner approve before FE binds
+- [x] T003 Decide paper order public surface: implement existing `/v1/orders` stub per OpenAPI **or** RFC additive paper-order ops — document choice in `contracts/README.md`
+  - **LOCKED**: Internal Strategy→Risk→OMS→adapter path; no public create-order in OpenAPI today; Gateway `POST /v1/orders` is non-contract (FE must not call). See `contracts/README.md` § T003.
+- [ ] T004 Quarantine/remove undocumented Gateway `POST /v1/orders` (or RFC `postOrders` only if Owner later wants public manual orders) — **no OpenAPI add required for US1**
 - [ ] T005 [P] BE: wire Gateway → core-trading strategy/risk/oms module boundaries (no FE)
 - [ ] T006 [P] BE: paper adapter interface (testnet **or** internal matcher per research D1)
 - [ ] T007 BE: ensure every entry path calls fail-closed risk guard + persists `risk_check_id`
