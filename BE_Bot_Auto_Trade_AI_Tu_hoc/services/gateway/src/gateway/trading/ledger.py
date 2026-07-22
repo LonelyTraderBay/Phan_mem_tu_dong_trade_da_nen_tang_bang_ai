@@ -198,13 +198,13 @@ def record_trade(
 
 def list_positions(
     *,
-    account_id: str,
+    account_id: str | None = None,
     symbol: str | None = None,
     open_only: bool = True,
 ) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for row in _positions:
-        if row["account_id"] != account_id:
+        if account_id is not None and row["account_id"] != account_id:
             continue
         if symbol is not None and row["symbol"] != symbol:
             continue
@@ -243,6 +243,56 @@ def list_orders(*, account_id: str | None = None) -> list[dict[str, Any]]:
     if account_id is None:
         return [dict(r) for r in _orders]
     return [dict(r) for r in _orders if r["account_id"] == account_id]
+
+
+def list_fills(*, account_id: str | None = None) -> list[dict[str, Any]]:
+    if account_id is None:
+        return [dict(r) for r in _fills]
+    return [dict(r) for r in _fills if r["account_id"] == account_id]
+
+
+def cancel_open_orders(*, trace_id: str) -> int:
+    """Mark non-terminal paper orders cancelled (L3). Returns count."""
+    n = 0
+    for order in _orders:
+        if order.get("status") in ("filled", "cancelled", "rejected"):
+            continue
+        order["status"] = "cancelled"
+        order["updated_at"] = _utcnow_iso()
+        order["cancel_trace_id"] = trace_id
+        n += 1
+    return n
+
+
+def flatten_all_positions(*, trace_id: str) -> int:
+    """Close all open paper positions (L4 internal matcher — not live exchange)."""
+    n = 0
+    for pos in _positions:
+        if not pos.get("_open", True):
+            continue
+        pos["_open"] = False
+        pos["quantity"] = 0.0
+        pos["flattened_at"] = _utcnow_iso()
+        pos["flatten_trace_id"] = trace_id
+        n += 1
+    return n
+
+
+def force_position_qty_for_tests(
+    *,
+    account_id: str,
+    symbol: str,
+    quantity: float,
+) -> None:
+    """Test helper: mutate open position qty to force recon mismatch."""
+    for pos in _positions:
+        if (
+            pos["account_id"] == account_id
+            and pos["symbol"] == symbol
+            and pos.get("_open", True)
+        ):
+            pos["quantity"] = quantity
+            return
 
 
 def seed_position(

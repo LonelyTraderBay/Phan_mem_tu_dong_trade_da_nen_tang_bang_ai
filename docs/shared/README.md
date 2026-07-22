@@ -21,7 +21,13 @@ Ownership: **Shared (RFC)**. Both BE and FE consume this layer; neither owns uni
 | [agent-assignment.yaml](./agent-assignment.yaml) | Task/lane được phép cho AI (machine-readable) |
 | [parallel-dispatch-phase1.md](./parallel-dispatch-phase1.md) | Bảng giao BE∥FE stubs (baseline, đã done) |
 | [parallel-dispatch-phase1.yaml](./parallel-dispatch-phase1.yaml) | Dispatch máy stubs |
-| [../../specs/002-paper-trading-e2e/](../../specs/002-paper-trading-e2e/) | **Active** paper trading E2E Speckit feature |
+| [../../specs/005-paper-ws-realtime/](../../specs/005-paper-ws-realtime/) | Paper WS realtime (ticket + locked channels) — **done** |
+| [../../specs/004-binance-testnet-adapter/](../../specs/004-binance-testnet-adapter/) | Binance Spot Testnet adapter — **done** |
+| [rfcs/RFC-0003-paper-ws-realtime.md](./rfcs/RFC-0003-paper-ws-realtime.md) | WS ticket + paper channel lock |
+| [../../specs/003-prod-paper-harden/](../../specs/003-prod-paper-harden/) | Prod-paper harden (kill-switch L1–L4, recon, ops tracker) — **done** |
+| [../../specs/002-paper-trading-e2e/](../../specs/002-paper-trading-e2e/) | Paper trading E2E Speckit feature (**done**) |
+| [paper-ops-tracker.md](./paper-ops-tracker.md) | ≥30-day paper criteria tracker (Owner calendar) |
+| [rfcs/RFC-0002-kill-switch-levels.md](./rfcs/RFC-0002-kill-switch-levels.md) | Additive kill-switch L1–L4 contract |
 | [api-overview.md](./api-overview.md) | REST / WS / events split |
 | [auth-rbac-sod.md](./auth-rbac-sod.md) | Roles + dual-control |
 | [error-model.md](./error-model.md) | Error JSON schema |

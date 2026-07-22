@@ -1,11 +1,14 @@
 {
-  "type": "event",
+  "type": "kill_switch.update",
   "channel": "risk.kill_switch",
   "seq": 42,
+  "trace_id": null,
+  "produced_at_utc": "2026-07-22T07:00:02.000Z",
+  "stale": false,
   "payload": {
-    "scope": "global",
+    "engaged": true,
     "level": "L1",
-    "triggered_by": "manual",
-    "reason": "example"
+    "reason": "example",
+    "updated_at": "2026-07-22T07:00:02.000Z"
   }
 }

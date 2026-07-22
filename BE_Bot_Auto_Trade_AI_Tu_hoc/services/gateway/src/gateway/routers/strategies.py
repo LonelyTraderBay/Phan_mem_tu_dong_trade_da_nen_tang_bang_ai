@@ -11,7 +11,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
-from gateway import account_store, auth_store, risk_guard, strategy_store
+from gateway import account_store, auth_store, kill_switch_store, risk_guard, strategy_store
 from gateway.deps import require_auth
 from gateway.errors import ErrorDetail, error_response
 from gateway.trading import strategy_runner
@@ -117,6 +117,18 @@ def patch_strategy(
 
     activating = "status" in fields_set and body.status == "active" and existing.status != "active"
     if activating:
+        ks = kill_switch_store.get_status()
+        if ks.get("engaged") and kill_switch_store.level_rank(ks.get("level")) >= 2:
+            return error_response(
+                403,
+                code="kill_switch_engaged",
+                message=(
+                    f"Kill-switch {ks.get('level')} engaged; "
+                    "strategy activate blocked (paper staging)"
+                ),
+                details=[ErrorDetail(field="status", reason="kill_switch_l2_plus")],
+                trace_id=ks.get("trace_id"),
+            )
         # Fail-closed risk dependency (Constitution II / P1-BE-08).
         risk_guard.ensure_entry_allowed()
         # Paper path: credentials → risk_engine (L1) → OMS → ledger (T009–T012, T018).

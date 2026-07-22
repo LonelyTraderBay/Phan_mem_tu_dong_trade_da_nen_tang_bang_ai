@@ -37,6 +37,7 @@ export const API_OPERATIONS = {
   getKillSwitchStatus: { method: "GET", path: "/v1/kill-switch" },
   postKillSwitch: { method: "POST", path: "/v1/kill-switch" },
   getAlerts: { method: "GET", path: "/v1/alerts" },
+  postWsTicket: { method: "POST", path: "/v1/ws/ticket" },
   /** Deferred (x-mvp: false) — present in contract map only; do not ship as live UI. */
   postModelPromote: {
     method: "POST",

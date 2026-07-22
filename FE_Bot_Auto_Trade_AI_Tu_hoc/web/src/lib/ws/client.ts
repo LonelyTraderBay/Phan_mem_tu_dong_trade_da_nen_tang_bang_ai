@@ -1,51 +1,120 @@
 /**
- * Placeholder WebSocket client with reconnect / resume stubs.
- * Wire to NEXT_PUBLIC_WS_URL and real protocol later.
+ * Gateway WS client — ticket auth, locked paper channels only.
+ * Does not invent market data when stale/disconnected.
  */
 
-export type WsClientState = "idle" | "connecting" | "open" | "closed";
+import { getWsBaseUrl } from "@/lib/api/client";
+import { postWsTicket } from "./ticket";
+import type { PaperWsChannel, WsEnvelope } from "./types";
 
-export class WsClient {
-  private url: string;
-  private state: WsClientState = "idle";
+export type WsConnectionState = "idle" | "connecting" | "live" | "stale" | "error";
+
+export type PaperWsHandlers = {
+  onState?: (state: WsConnectionState, detail?: string) => void;
+  onFrame?: (frame: WsEnvelope) => void;
+};
+
+const STALE_MS = 15_000;
+const DEFAULT_CHANNELS: PaperWsChannel[] = [
+  "risk.kill_switch",
+  "ops.alerts",
+  "trading.orders",
+  "trading.positions",
+  "market.candles",
+];
+
+function joinWsUrl(wsPath: string, ticket: string): string {
+  const base = getWsBaseUrl().replace(/\/$/, "");
+  // getWsBaseUrl may already include /ws — prefer ticket response path.
+  const origin = base.replace(/\/ws\/?$/, "");
+  const path = wsPath.startsWith("/") ? wsPath : `/${wsPath}`;
+  return `${origin.replace(/^http/, "ws")}${path}?ticket=${encodeURIComponent(ticket)}`;
+}
+
+export class PaperWsSession {
   private socket: WebSocket | null = null;
-  private lastResumeToken: string | null = null;
+  private staleTimer: ReturnType<typeof setTimeout> | null = null;
+  private closed = false;
+  private handlers: PaperWsHandlers;
+  private channels: PaperWsChannel[];
 
-  constructor(url?: string) {
-    this.url =
-      url ?? process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000/ws";
+  constructor(
+    handlers: PaperWsHandlers = {},
+    channels: PaperWsChannel[] = DEFAULT_CHANNELS,
+  ) {
+    this.handlers = handlers;
+    this.channels = channels;
   }
 
-  getState(): WsClientState {
-    return this.state;
-  }
-
-  /** Stub — open connection (not implemented). */
-  connect(): void {
-    this.state = "connecting";
-    // TODO: create WebSocket, attach handlers
-    this.state = "closed";
-  }
-
-  /** Stub — attempt reconnect after disconnect. */
-  reconnect(): void {
-    this.state = "connecting";
-    // TODO: backoff + reconnect
-    this.state = "closed";
-  }
-
-  /** Stub — resume stream using last token. */
-  resume(token?: string): void {
-    if (token) {
-      this.lastResumeToken = token;
+  async start(): Promise<void> {
+    this.closed = false;
+    this.handlers.onState?.("connecting");
+    const ticketResult = await postWsTicket();
+    if (!ticketResult.ok) {
+      this.handlers.onState?.(
+        "error",
+        ticketResult.error.message || "postWsTicket failed",
+      );
+      return;
     }
-    // TODO: send resume frame with this.lastResumeToken
-    void this.lastResumeToken;
-    void this.socket;
+    if (this.closed) return;
+
+    const url = joinWsUrl(ticketResult.data.ws_path, ticketResult.data.ticket);
+    const socket = new WebSocket(url);
+    this.socket = socket;
+
+    socket.onopen = () => {
+      this.bumpLive();
+      socket.send(
+        JSON.stringify({ type: "subscribe", channels: this.channels }),
+      );
+    };
+    socket.onmessage = (ev) => {
+      this.bumpLive();
+      try {
+        const data = JSON.parse(String(ev.data)) as WsEnvelope;
+        if (typeof data?.type === "string" && typeof data?.seq === "number") {
+          this.handlers.onFrame?.(data);
+        }
+      } catch {
+        // ignore malformed
+      }
+    };
+    socket.onerror = () => {
+      this.handlers.onState?.("error", "WebSocket error");
+    };
+    socket.onclose = () => {
+      this.clearStaleTimer();
+      if (!this.closed) this.handlers.onState?.("stale", "disconnected");
+    };
   }
 
-  disconnect(): void {
+  stop(): void {
+    this.closed = true;
+    this.clearStaleTimer();
+    this.socket?.close();
     this.socket = null;
-    this.state = "closed";
+    this.handlers.onState?.("idle");
+  }
+
+  ping(): void {
+    if (this.socket?.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({ type: "ping" }));
+    }
+  }
+
+  private bumpLive(): void {
+    this.handlers.onState?.("live");
+    this.clearStaleTimer();
+    this.staleTimer = setTimeout(() => {
+      this.handlers.onState?.("stale", "heartbeat silence");
+    }, STALE_MS);
+  }
+
+  private clearStaleTimer(): void {
+    if (this.staleTimer) {
+      clearTimeout(this.staleTimer);
+      this.staleTimer = null;
+    }
   }
 }

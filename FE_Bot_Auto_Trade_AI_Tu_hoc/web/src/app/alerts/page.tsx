@@ -94,7 +94,10 @@ export default function AlertsPage() {
       <p className="mt-1 text-sm text-neutral-600">
         Inbox vận hành — hiển thị <code className="text-xs">code</code> +{" "}
         <code className="text-xs">message</code> từ getAlerts (server). Không
-        secrets.
+        secrets. Chú ý mã{" "}
+        <code className="text-xs">RECON_MISMATCH</code>,{" "}
+        <code className="text-xs">KILL_SWITCH_ACTIVE</code>,{" "}
+        <code className="text-xs">KILL_SWITCH_L2_PLUS</code>.
       </p>
 
       <p className="mt-3 text-sm">

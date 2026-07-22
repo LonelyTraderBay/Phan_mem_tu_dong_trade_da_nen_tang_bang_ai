@@ -9,6 +9,7 @@ from gateway import account_store
 from gateway.errors import ErrorDetail
 from gateway.strategy_store import StoredStrategy
 from gateway.trading import oms, risk_engine
+from gateway.trading.paper_adapter import VenueAdapterError
 
 BASELINE_QTY = 0.001
 
@@ -69,13 +70,23 @@ def run_on_activate(strategy: StoredStrategy) -> ActivateResult:
             trace_id=decision.trace_id,
         )
 
-    oms.submit_paper_order(
-        decision=decision,
-        account_id=account_id,
-        symbol=strategy.symbol,
-        side="buy",
-        quantity=qty,
-        strategy_id=strategy.id,
-        interval=strategy.timeframe if strategy.timeframe else "1m",
-    )
+    try:
+        oms.submit_paper_order(
+            decision=decision,
+            account_id=account_id,
+            symbol=strategy.symbol,
+            side="buy",
+            quantity=qty,
+            strategy_id=strategy.id,
+            interval=strategy.timeframe if strategy.timeframe else "1m",
+        )
+    except VenueAdapterError as exc:
+        return ActivateResult(
+            ok=False,
+            status_code=502,
+            code=exc.code,
+            message=exc.message,
+            details=(ErrorDetail(field="venue", reason=exc.code),),
+            trace_id=decision.trace_id,
+        )
     return ActivateResult(ok=True, trace_id=decision.trace_id)

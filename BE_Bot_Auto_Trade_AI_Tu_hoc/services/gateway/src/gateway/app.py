@@ -10,14 +10,15 @@ from fastapi.responses import JSONResponse
 
 from gateway.errors import GatewayError, error_response
 from gateway.routers import v1_router
+from gateway.ws_endpoint import router as ws_router
 
 app = FastAPI(
     title="gateway",
     version="0.1.0",
     description=(
         "API Gateway. Auth, accounts, strategies, market, positions/PnL, "
-        "trade-report, L1 kill-switch, and alerts paper stubs under /v1; "
-        "other business routes return HTTP 501 until implemented."
+        "trade-report, kill-switch, alerts under /v1; paper WebSocket at /ws "
+        "(ticket via postWsTicket)."
     ),
 )
 
@@ -44,3 +45,4 @@ def ready() -> dict[str, str]:
 
 
 app.include_router(v1_router)
+app.include_router(ws_router)

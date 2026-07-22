@@ -1,11 +1,18 @@
-version: "1.2.0"
-feature: "002-paper-trading-e2e"
+version: "1.3.0"
+feature: null
 updated_at: "2026-07-22"
+active_assignment: null
 policy: >
   AI MUST only work on assignment ids with status=active that the Owner
   explicitly named in chat. status=blocked means do not start. status=done
   means do not reopen without Owner request. Spawn at most one BE and one FE
   task in parallel unless Owner says otherwise. Contract-first; In-MVP only.
+  Priority queue: only the first non-done item may be active at a time.
+priority_queue:
+  - PROD-PAPER-HARDEN
+  - PAPER-TESTNET-ADAPTER
+  - PAPER-WS-REALTIME
+  - PROD-LIVE-PREP
 assignments:
   - id: GOV-HARDEN-2026-07-22
     title: Enterprise governance hardening
@@ -27,7 +34,7 @@ assignments:
     status: done
     allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
     forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
-    notes: "Waves P1-BE-01..08 complete — superseded by TRADING-E2E for new work"
+    notes: "Waves P1-BE-01..08 complete"
 
   - id: P1-FE-PAPER-STUB
     title: Phase-1 FE paper stubs
@@ -35,7 +42,7 @@ assignments:
     status: done
     allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
     forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
-    notes: "Waves P1-FE-01..08 complete — superseded by TRADING-E2E for new work"
+    notes: "Waves P1-FE-01..08 complete"
 
   - id: TRADING-E2E
     title: Paper trading E2E (Speckit 002)
@@ -49,11 +56,72 @@ assignments:
       - "packages/contracts/"
       - "specs/002-paper-trading-e2e/"
       - "docs/shared/"
+    notes: "Demo-complete 2026-07-22. Do not reopen without Owner request."
+
+  - id: PROD-PAPER-HARDEN
+    title: Phase-1 prod-paper harden (Speckit 003)
+    lane: both
+    status: done
+    feature_dir: "specs/003-prod-paper-harden"
+    tasks_file: "specs/003-prod-paper-harden/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "specs/003-prod-paper-harden/"
+      - "docs/shared/"
+      - "AGENTS.md"
     forbidden_paths: []
     task_ids_prefix: "T"
     notes: >
-      Demo-complete 2026-07-22: T001–T027 done. Internal paper path
-      Strategy→Risk→OMS→adapter; L1 + fail-closed; FE server-truth UX.
-      Gateway pytest 55 PASS; wave9_smoke PASS; validate_governance PASS.
-      Still paper/testnet only — live capital requires new Speckit feature + assignment.
-      Do not reopen without Owner request.
+      Done 2026-07-22: RFC-0002 levels L1–L4, recon+RECON_MISMATCH,
+      paper-ops tracker, contracts 0.2.0. Gateway pytest 61 PASS.
+      ≥30-day paper remains Owner calendar. Do not reopen without Owner.
+
+  - id: PAPER-TESTNET-ADAPTER
+    title: External crypto paper/testnet adapter (Binance Spot Testnet)
+    lane: backend
+    status: done
+    feature_dir: "specs/004-binance-testnet-adapter"
+    tasks_file: "specs/004-binance-testnet-adapter/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "docs/shared/"
+      - "specs/004-binance-testnet-adapter/"
+      - "AGENTS.md"
+      - ".env.example"
+      - ".specify/"
+    forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: Binance Spot Testnet adapter + host allowlist;
+      PAPER_VENUE_MODE internal|binance_testnet; mock tests; gateway 68 PASS.
+      Live drill: set mode + testnet keys via API (never commit). No reopen
+      without Owner.
+
+  - id: PAPER-WS-REALTIME
+    title: Paper WS realtime (contract-first)
+    lane: both
+    status: done
+    feature_dir: "specs/005-paper-ws-realtime"
+    tasks_file: "specs/005-paper-ws-realtime/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "docs/shared/"
+      - "specs/005-paper-ws-realtime/"
+      - "AGENTS.md"
+      - ".specify/"
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: RFC-0003, contracts 0.3.0 postWsTicket, /ws hub,
+      FE WsStatusBar stale UX. Gateway pytest 73 PASS. No reopen without Owner.
+
+  - id: PROD-LIVE-PREP
+    title: Phase-2 prod-live prep (chaos / gates)
+    lane: both
+    status: blocked
+    allowed_paths: ["docs/shared/", "specs/", "BE_Bot_Auto_Trade_AI_Tu_Hoc/", "packages/contracts/"]
+    notes: "Queue #4 — live capital gates; Owner amend before active; no Deferred SaaS"

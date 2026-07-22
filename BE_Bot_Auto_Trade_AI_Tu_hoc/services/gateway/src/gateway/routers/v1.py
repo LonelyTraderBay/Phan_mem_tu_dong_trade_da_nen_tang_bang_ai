@@ -15,6 +15,7 @@ from gateway.routers.market import router as market_router
 from gateway.routers.portfolio import router as portfolio_router
 from gateway.routers.reports import router as reports_router
 from gateway.routers.strategies import router as strategies_router
+from gateway.routers.ws_ticket import router as ws_ticket_router
 
 router = APIRouter(prefix="/v1")
 router.include_router(auth_router)
@@ -25,3 +26,4 @@ router.include_router(portfolio_router)
 router.include_router(reports_router)
 router.include_router(kill_switch_router)
 router.include_router(alerts_router)
+router.include_router(ws_ticket_router)
