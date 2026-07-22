@@ -1,100 +1,127 @@
-version: "1.1.0"
-feature: "001-mvp-feature-scope"
+version: "1.3.0"
+feature: null
 updated_at: "2026-07-22"
+active_assignment: null
 policy: >
   AI MUST only work on assignment ids with status=active that the Owner
   explicitly named in chat. status=blocked means do not start. status=done
-  means do not reopen without Owner request. For Phase-1 parallel stubs use
-  docs/shared/parallel-dispatch-phase1.md (+ .yaml) and spawn at most one BE
-  and one FE task per wave.
+  means do not reopen without Owner request. Spawn at most one BE and one FE
+  task in parallel unless Owner says otherwise. Contract-first; In-MVP only.
+  Priority queue: only the first non-done item may be active at a time.
+priority_queue:
+  - PROD-PAPER-HARDEN
+  - PAPER-TESTNET-ADAPTER
+  - PAPER-WS-REALTIME
+  - PROD-LIVE-PREP
 assignments:
   - id: GOV-HARDEN-2026-07-22
-    title: Enterprise governance hardening (OpenAPI MVP stubs, CI, rules, validators)
+    title: Enterprise governance hardening
     lane: shared
     status: done
-    allowed_paths:
-      - "AGENTS.md"
-      - ".cursor/rules/"
-      - ".github/"
-      - ".gitleaks.toml"
-      - ".gitignore"
-      - "packages/contracts/"
-      - "scripts/"
-      - "docs/shared/"
-      - "docs/architecture/"
-      - "README.md"
-      - "specs/001-mvp-feature-scope/"
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-    forbidden_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/services/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/web/"
-    notes: "Completed 2026-07-22 — governance CI + MVP OpenAPI stubs"
+    allowed_paths: ["AGENTS.md", ".cursor/rules/", ".github/", "packages/contracts/", "scripts/", "docs/shared/"]
+    notes: "Completed"
 
   - id: T014-T028
-    title: MVP matrix paper-day / deferred doc tasks (feature 001)
+    title: MVP matrix docs (001)
     lane: shared
     status: done
-    allowed_paths:
-      - "packages/contracts/openapi/"
-      - "docs/shared/"
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "specs/001-mvp-feature-scope/"
-    notes: "Feature 001 scope docs complete"
+    allowed_paths: ["specs/001-mvp-feature-scope/", "docs/shared/"]
+    notes: "Completed"
 
   - id: P1-BE-PAPER-STUB
-    title: Phase-1 BE paper stubs (In-MVP only; parallel dispatch)
+    title: Phase-1 BE paper stubs
     lane: backend
-    status: active
-    allowed_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
-    forbidden_paths:
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
-      - "packages/contracts/"
-    dispatch_file: "docs/shared/parallel-dispatch-phase1.yaml"
-    task_ids:
-      - P1-BE-01
-      - P1-BE-02
-      - P1-BE-03
-      - P1-BE-04
-      - P1-BE-05
-      - P1-BE-06
-      - P1-BE-07
-      - P1-BE-08
-    notes: >
-      Owner-activated for Cursor parallel BE subagents. Implement OpenAPI
-      stubs only; no live broker; no Deferred. Do not edit contracts without RFC.
+    status: done
+    allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    notes: "Waves P1-BE-01..08 complete"
 
   - id: P1-FE-PAPER-STUB
-    title: Phase-1 FE paper stubs (In-MVP only; parallel dispatch)
+    title: Phase-1 FE paper stubs
     lane: frontend
-    status: active
-    allowed_paths:
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
-    forbidden_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
-      - "packages/contracts/"
-    dispatch_file: "docs/shared/parallel-dispatch-phase1.yaml"
-    task_ids:
-      - P1-FE-01
-      - P1-FE-02
-      - P1-FE-03
-      - P1-FE-04
-      - P1-FE-05
-      - P1-FE-06
-      - P1-FE-07
-      - P1-FE-08
-    notes: >
-      Owner-activated for Cursor parallel FE subagents. Bind existing OpenAPI
-      only; handle 501; no client PnL truth; no Deferred UI as live.
+    status: done
+    allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    notes: "Waves P1-FE-01..08 complete"
 
   - id: TRADING-E2E
-    title: Full paper broker trading implementation
+    title: Paper trading E2E (Speckit 002)
     lane: both
-    status: blocked
+    status: done
+    feature_dir: "specs/002-paper-trading-e2e"
+    tasks_file: "specs/002-paper-trading-e2e/tasks.md"
     allowed_paths:
       - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
       - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
       - "packages/contracts/"
-    notes: "Still blocked — paper stub ≠ live/paper broker E2E"
+      - "specs/002-paper-trading-e2e/"
+      - "docs/shared/"
+    notes: "Demo-complete 2026-07-22. Do not reopen without Owner request."
+
+  - id: PROD-PAPER-HARDEN
+    title: Phase-1 prod-paper harden (Speckit 003)
+    lane: both
+    status: done
+    feature_dir: "specs/003-prod-paper-harden"
+    tasks_file: "specs/003-prod-paper-harden/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "specs/003-prod-paper-harden/"
+      - "docs/shared/"
+      - "AGENTS.md"
+    forbidden_paths: []
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: RFC-0002 levels L1–L4, recon+RECON_MISMATCH,
+      paper-ops tracker, contracts 0.2.0. Gateway pytest 61 PASS.
+      ≥30-day paper remains Owner calendar. Do not reopen without Owner.
+
+  - id: PAPER-TESTNET-ADAPTER
+    title: External crypto paper/testnet adapter (Binance Spot Testnet)
+    lane: backend
+    status: done
+    feature_dir: "specs/004-binance-testnet-adapter"
+    tasks_file: "specs/004-binance-testnet-adapter/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "docs/shared/"
+      - "specs/004-binance-testnet-adapter/"
+      - "AGENTS.md"
+      - ".env.example"
+      - ".specify/"
+    forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: Binance Spot Testnet adapter + host allowlist;
+      PAPER_VENUE_MODE internal|binance_testnet; mock tests; gateway 68 PASS.
+      Live drill: set mode + testnet keys via API (never commit). No reopen
+      without Owner.
+
+  - id: PAPER-WS-REALTIME
+    title: Paper WS realtime (contract-first)
+    lane: both
+    status: done
+    feature_dir: "specs/005-paper-ws-realtime"
+    tasks_file: "specs/005-paper-ws-realtime/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "docs/shared/"
+      - "specs/005-paper-ws-realtime/"
+      - "AGENTS.md"
+      - ".specify/"
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: RFC-0003, contracts 0.3.0 postWsTicket, /ws hub,
+      FE WsStatusBar stale UX. Gateway pytest 73 PASS. No reopen without Owner.
+
+  - id: PROD-LIVE-PREP
+    title: Phase-2 prod-live prep (chaos / gates)
+    lane: both
+    status: blocked
+    allowed_paths: ["docs/shared/", "specs/", "BE_Bot_Auto_Trade_AI_Tu_Hoc/", "packages/contracts/"]
+    notes: "Queue #4 — live capital gates; Owner amend before active; no Deferred SaaS"

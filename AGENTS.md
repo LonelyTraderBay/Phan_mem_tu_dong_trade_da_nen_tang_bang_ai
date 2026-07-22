@@ -47,10 +47,12 @@ Governance được **ép bằng máy**: `scripts/validate_governance.py` + CI `
 
 ## Ưu tiên hiện tại
 
-1. Tôn trọng matrix + OpenAPI MVP stubs (`x-mvp: true`)
-2. Parallel paper stubs: `docs/shared/parallel-dispatch-phase1.md` — assignment `P1-BE-PAPER-STUB` + `P1-FE-PAPER-STUB`
-3. Không mở `TRADING-E2E` (broker thật) cho đến Owner set active
-4. Speckit: specify → plan → tasks → implement → converge
+1. Tôn trọng matrix + OpenAPI MVP (`x-mvp: true`); Deferred vẫn cấm
+2. `PAPER-WS-REALTIME` (005) / `PAPER-TESTNET-ADAPTER` (004) = **done**
+3. `PROD-PAPER-HARDEN` / `TRADING-E2E` / `P1-*-PAPER-STUB` = **done**
+4. **Next (blocked):** `PROD-LIVE-PREP` — Owner amend trước khi active (live capital gates)
+5. Speckit: specify → plan → tasks → implement → converge — không nhảy cóc
+6. Không live capital / Phase 4 SaaS trừ Owner amend matrix + assignment mới
 
 ## Khi không chắc
 

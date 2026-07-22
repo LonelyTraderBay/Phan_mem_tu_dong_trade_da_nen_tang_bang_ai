@@ -1,31 +1,37 @@
 """FastAPI application skeleton for the API Gateway.
 
-Business routes are stubs that return HTTP 501 until implemented.
+System probes live on the app root. MVP business routes mount under /v1.
 """
 
 from __future__ import annotations
 
-from uuid import uuid4
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+
+from gateway.errors import GatewayError, error_response
+from gateway.routers import v1_router
+from gateway.ws_endpoint import router as ws_router
 
 app = FastAPI(
     title="gateway",
     version="0.1.0",
     description=(
-        "API Gateway skeleton. Business routes are not implemented yet "
-        "and return HTTP 501 stubs."
+        "API Gateway. Auth, accounts, strategies, market, positions/PnL, "
+        "trade-report, kill-switch, alerts under /v1; paper WebSocket at /ws "
+        "(ticket via postWsTicket)."
     ),
 )
 
 
-class ErrorBody(BaseModel):
-    code: str
-    message: str
-    trace_id: str
-    details: list[dict] = []
+@app.exception_handler(GatewayError)
+async def gateway_error_handler(_request: Request, exc: GatewayError) -> JSONResponse:
+    return error_response(
+        exc.status_code,
+        code=exc.code,
+        message=exc.message,
+        details=exc.details,
+        trace_id=exc.trace_id,
+    )
 
 
 @app.get("/health")
@@ -38,13 +44,5 @@ def ready() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/v1/orders")
-def create_order_stub() -> JSONResponse:
-    """Example business stub — returns 501 until OMS wiring exists."""
-    body = ErrorBody(
-        code="not_implemented",
-        message="POST /v1/orders is not implemented",
-        trace_id=str(uuid4()),
-        details=[{"route": "POST /v1/orders"}],
-    )
-    return JSONResponse(status_code=501, content=body.model_dump())
+app.include_router(v1_router)
+app.include_router(ws_router)

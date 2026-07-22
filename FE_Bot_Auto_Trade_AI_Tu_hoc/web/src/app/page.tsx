@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const screens = [
+  { href: "/login", label: "Login" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/strategies", label: "Strategies" },
   { href: "/models", label: "Models" },

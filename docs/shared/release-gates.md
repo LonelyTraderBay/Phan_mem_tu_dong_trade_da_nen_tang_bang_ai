@@ -21,10 +21,12 @@ Timeout ack → UNKNOWN (no double order); Risk down → 0 orders; Vault down �
 
 ### Phase 1 → `prod-paper`
 
-- [ ] Kill-switch L1–L4 on staging  
-- [ ] Reconciliation job + alerts  
-- [ ] 0 secrets in repo  
-- [ ] ≥30 days paper criteria (Phần 08)
+Tracking feature: [`specs/003-prod-paper-harden/`](../../specs/003-prod-paper-harden/) · assignment `PROD-PAPER-HARDEN`.
+
+- [x] Kill-switch L1–L4 on staging — *tooling done in 003 / RFC-0002 (paper/dev; re-run on staging env)*  
+- [x] Reconciliation job + alerts — *module + `RECON_MISMATCH` alerts (003)*  
+- [x] 0 secrets in repo — *validate_governance + gitleaks config PASS (ongoing)*  
+- [ ] ≥30 days paper criteria (Phần 08) — *ops tracker: [paper-ops-tracker.md](./paper-ops-tracker.md) (Owner calendar; not CI)*
 
 ### Phase 2 → `prod-live` (≤5% NAV)
 

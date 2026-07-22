@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Trade AI Gateway API
-  version: "0.1.0"
+  version: "0.3.0"
   description: >-
     Contract stubs for Phase-1 MVP; BE may return 501 until implement;
     x-mvp true = In-MVP; FE must not invent fields.
@@ -23,6 +23,7 @@ tags:
   - name: KillSwitch
   - name: Alerts
   - name: Models
+  - name: WebSocket
   - name: System
 
 paths:
@@ -505,6 +506,30 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "501":
           $ref: "#/components/responses/NotImplemented"
+        default:
+          $ref: "#/components/responses/ErrorResponse"
+
+  /v1/ws/ticket:
+    post:
+      operationId: postWsTicket
+      summary: Issue a short-lived Gateway WebSocket ticket
+      description: >
+        Authenticated operator obtains a ticket to connect to Gateway WS at
+        `ws_path` (default `/ws`) with query `ticket`. See packages/contracts/ws/
+        and RFC-0003. FE must not connect to the Event Bus.
+      tags: [WebSocket]
+      x-mvp: true
+      responses:
+        "200":
+          description: Ticket issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WsTicketResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         default:
           $ref: "#/components/responses/ErrorResponse"
 
@@ -1135,6 +1160,11 @@ components:
           type: string
           format: date-time
 
+    KillSwitchLevel:
+      type: string
+      description: Protective escalation level (paper/staging). L1 blocks new entries.
+      enum: [L1, L2, L3, L4]
+
     KillSwitchRequest:
       type: object
       required: [engaged, reason]
@@ -1145,6 +1175,17 @@ components:
           type: string
           minLength: 1
           maxLength: 500
+        level:
+          allOf:
+            - $ref: "#/components/schemas/KillSwitchLevel"
+          description: >
+            Target level when engaging. Defaults to L1 when omitted for backward
+            compatibility. Ignored when engaged=false (full clear).
+        confirmed:
+          type: boolean
+          description: >
+            Required true for L2+ engage/disengage. L1 may omit.
+            Rejected by Gateway when missing for L2+.
 
     KillSwitchStatus:
       type: object
@@ -1152,6 +1193,11 @@ components:
       properties:
         engaged:
           type: boolean
+        level:
+          allOf:
+            - $ref: "#/components/schemas/KillSwitchLevel"
+          nullable: true
+          description: Highest active level when engaged; null when not engaged.
         reason:
           type: string
           nullable: true
@@ -1162,6 +1208,26 @@ components:
           type: string
           format: uuid
           nullable: true
+        trace_id:
+          type: string
+          nullable: true
+          description: Correlation id for last mutate (no secrets).
+
+    WsTicketResponse:
+      type: object
+      required: [ticket, expires_at, ws_path]
+      properties:
+        ticket:
+          type: string
+          minLength: 16
+          description: Opaque short-lived ticket for Gateway WS connect
+        expires_at:
+          type: string
+          format: date-time
+        ws_path:
+          type: string
+          description: Gateway WS path (e.g. /ws); connect with ?ticket=
+          example: /ws
 
     AlertSeverity:
       type: string

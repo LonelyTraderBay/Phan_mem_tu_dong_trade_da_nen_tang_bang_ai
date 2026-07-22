@@ -38,6 +38,18 @@
 7. Both-items: xem bảng contract prerequisites trong MVP matrix trước khi code.  
 8. Xong task được giao → **dừng** và báo cáo.
 
+## Paper venue (004)
+
+- Default `PAPER_VENUE_MODE=internal` (CI / matcher nội bộ).
+- Owner opt-in: `PAPER_VENUE_MODE=binance_testnet` → Spot Testnet only (`testnet.binance.vision`); refuse mainnet.
+- Keys qua account API (masked); không commit secret. Spec: `specs/004-binance-testnet-adapter/`.
+
+## Paper WS (005)
+
+- `POST /v1/ws/ticket` + WebSocket `/ws?ticket=` (RFC-0003).
+- Hub broadcasts kill-switch / orders / positions / alerts; market snapshot on subscribe (stale fixture OK).
+- Spec: `specs/005-paper-ws-realtime/`.
+
 ## Parallel FE
 
 FE chỉ làm trong `FE_Bot_Auto_Trade_AI_Tu_Hoc/`. Phối hợp qua contracts + Owner merge RFC + matrix.
