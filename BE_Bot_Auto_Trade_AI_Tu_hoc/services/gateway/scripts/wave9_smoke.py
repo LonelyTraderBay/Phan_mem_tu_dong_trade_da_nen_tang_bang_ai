@@ -90,8 +90,8 @@ r = c.post("/v1/kill-switch", headers=h, json={"engaged": True, "reason": "wave9
 ok("kill_switch_engage", r.status_code == 200 and r.json().get("engaged") is True, f"{r.status_code}")
 r = c.get("/v1/kill-switch", headers=h)
 ok("kill_switch_status", r.status_code == 200 and r.json().get("engaged") is True, f"{r.status_code}")
-r = c.get("/v1/alerts", headers=h)
-ok("alerts", r.status_code == 200, f"{r.status_code}")
+r = c.get("/v1/alerts", headers=h, params={"account_id": aid})
+ok("alerts", r.status_code == 200, f"{r.status_code} {r.text[:120]}")
 
 set_risk_available(False)
 r2 = c.post(
