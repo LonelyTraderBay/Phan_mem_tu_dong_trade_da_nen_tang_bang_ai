@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { KillSwitchBar } from "@/components/KillSwitchBar";
-import { NavBar } from "@/components/NavBar";
+import { WsStatusBar } from "@/components/WsStatusBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-neutral-50 text-neutral-900 antialiased">
         <KillSwitchBar />
-        <NavBar />
+        <WsStatusBar />
         <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
       </body>
     </html>

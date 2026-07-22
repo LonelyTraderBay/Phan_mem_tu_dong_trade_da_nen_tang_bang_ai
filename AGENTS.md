@@ -47,10 +47,13 @@ Governance được **ép bằng máy**: `scripts/validate_governance.py` + CI `
 
 ## Ưu tiên hiện tại
 
-1. Tôn trọng matrix + OpenAPI MVP stubs (`x-mvp: true`)
-2. Parallel paper stubs: `docs/shared/parallel-dispatch-phase1.md` — assignment `P1-BE-PAPER-STUB` + `P1-FE-PAPER-STUB`
-3. Không mở `TRADING-E2E` (broker thật) cho đến Owner set active
-4. Speckit: specify → plan → tasks → implement → converge
+1. Tôn trọng matrix + OpenAPI MVP (`x-mvp: true`); Deferred vẫn cấm
+2. `LIVE-VENUE-ADAPTER` (013) = Binance mainnet adapter + ≤5% NAV (`LIVE_NAV_QUOTE=100000`) — **default OFF**
+3. Phase-2 release-gates = Owner auto-check / self-attest recorded
+4. Paper path (WS / testnet / harden / E2E / P1) = **done**
+5. Speckit: specify → plan → tasks → implement → converge — không nhảy cóc
+6. Không Phase 4 SaaS trừ Owner amend matrix
+7. Không commit live keys; không bật `LIVE_TRADING_ENABLED` trên CI
 
 ## Khi không chắc
 

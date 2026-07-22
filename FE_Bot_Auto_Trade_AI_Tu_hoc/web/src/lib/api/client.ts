@@ -1,233 +1,154 @@
-import { clearTokens, getAccessToken } from "./auth-storage";
-import { ApiError } from "./errors";
-import type {
-  Account,
-  AccountCreate,
-  ActionResult,
-  Alert,
-  AlertSeverity,
-  ApiErrorBody,
-  ApiKeyCreate,
-  ApiKeyMasked,
-  Candle,
-  CandleInterval,
-  KillSwitchRequest,
-  KillSwitchStatus,
-  LoginRequest,
-  LogoutRequest,
-  MarketSymbol,
-  MarketType,
-  PnlSummary,
-  Position,
-  RefreshTokenRequest,
-  Strategy,
-  StrategyCreate,
-  StrategyPatch,
-  StrategyStatus,
-  TokenPair,
-  TradeReport,
-} from "./types";
+/**
+ * Gateway HTTP client - paths from OpenAPI operation map only.
+ * Errors: docs/shared/error-model.md (code, message, trace_id, details).
+ */
 
-export type ApiResult<T> = {
-  data: T;
-  stale: boolean;
-  headers: Headers;
-};
+import {
+  API_OPERATIONS,
+  type OperationId,
+  resolveOperationPath,
+} from "./operations";
+import {
+  type ApiResult,
+  toApiFailure,
+} from "./errors";
 
-function apiBaseUrl(): string {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
-  if (!base) {
-    throw new ApiError(0, null, "NEXT_PUBLIC_API_URL is not set");
-  }
-  return base;
+const fetchBase =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+export function getApiBaseUrl(): string {
+  return fetchBase;
 }
 
-function isStaleResponse(headers: Headers): boolean {
-  const raw =
-    headers.get("X-Data-Stale") ??
-    headers.get("x-data-stale") ??
-    headers.get("X-Stale");
-  if (!raw) return false;
-  const v = raw.trim().toLowerCase();
-  return v === "1" || v === "true" || v === "yes";
+export function getWsBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000/ws";
 }
 
-async function parseErrorBody(res: Response): Promise<ApiErrorBody | null> {
-  try {
-    const json = (await res.json()) as Partial<ApiErrorBody>;
-    if (
-      typeof json?.code === "string" &&
-      typeof json?.message === "string" &&
-      typeof json?.trace_id === "string"
-    ) {
-      return json as ApiErrorBody;
-    }
-    return null;
-  } catch {
-    return null;
-  }
+function joinUrl(path: string): string {
+  return `${fetchBase.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 }
 
-type RequestOptions = {
-  method?: string;
-  body?: unknown;
+/**
+ * Low-level fetch by relative path. Prefer `apiRequest` / `apiCall` so callers
+ * stay on known OpenAPI operations.
+ */
+export async function apiFetch(
+  path: string,
+  init?: RequestInit,
+): Promise<Response> {
+  return fetch(joinUrl(path), init);
+}
+
+export type ApiCallOptions = {
+  pathParams?: Record<string, string>;
   query?: Record<string, string | number | boolean | undefined | null>;
-  auth?: boolean;
+  body?: unknown;
+  headers?: HeadersInit;
   signal?: AbortSignal;
+  /** Bearer access token when required by the operation. */
+  accessToken?: string;
 };
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<ApiResult<T>> {
-  const { method = "GET", body, query, auth = true, signal } = options;
-  const url = new URL(path.startsWith("http") ? path : `${apiBaseUrl()}${path}`);
-  if (query) {
-    for (const [key, value] of Object.entries(query)) {
-      if (value === undefined || value === null || value === "") continue;
-      url.searchParams.set(key, String(value));
-    }
+function buildQuery(
+  query?: ApiCallOptions["query"],
+): string {
+  if (!query) return "";
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null) continue;
+    params.set(key, String(value));
   }
-
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  };
-  if (body !== undefined) {
-    headers["Content-Type"] = "application/json";
-  }
-  if (auth) {
-    const token = getAccessToken();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-  }
-
-  let res: Response;
-  try {
-    res = await fetch(url.toString(), {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal,
-      cache: "no-store",
-    });
-  } catch (err) {
-    throw new ApiError(
-      0,
-      null,
-      err instanceof Error ? err.message : "Network request failed",
-    );
-  }
-
-  if (!res.ok) {
-    const errBody = await parseErrorBody(res);
-    if (res.status === 401) {
-      clearTokens();
-    }
-    throw new ApiError(res.status, errBody, res.statusText || `HTTP ${res.status}`);
-  }
-
-  if (res.status === 204) {
-    return { data: undefined as T, stale: isStaleResponse(res.headers), headers: res.headers };
-  }
-
-  const data = (await res.json()) as T;
-  return { data, stale: isStaleResponse(res.headers), headers: res.headers };
+  const s = params.toString();
+  return s ? `?${s}` : "";
 }
 
-/** Typed MVP operations — paths match OpenAPI only. */
+/**
+ * Call a known OpenAPI operation. Returns raw Response (caller parses).
+ * Throws if path params are missing for templated paths.
+ */
+export async function apiRequest(
+  operationId: OperationId,
+  options: ApiCallOptions = {},
+): Promise<Response> {
+  const op = API_OPERATIONS[operationId];
+  const path =
+    resolveOperationPath(op.path, options.pathParams) +
+    buildQuery(options.query);
 
-export function postAuthLogin(body: LoginRequest) {
-  return request<TokenPair>("/v1/auth/login", { method: "POST", body, auth: false });
-}
+  const headers = new Headers(options.headers);
+  if (options.body !== undefined && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (options.accessToken) {
+    headers.set("Authorization", `Bearer ${options.accessToken}`);
+  }
 
-export function postAuthRefresh(body: RefreshTokenRequest) {
-  return request<TokenPair>("/v1/auth/refresh", { method: "POST", body, auth: false });
-}
-
-export function postAuthLogout(body?: LogoutRequest) {
-  return request<ActionResult>("/v1/auth/logout", { method: "POST", body: body ?? {} });
-}
-
-export function postAccounts(body: AccountCreate) {
-  return request<Account>("/v1/accounts", { method: "POST", body });
-}
-
-export function postAccountApiKeys(accountId: string, body: ApiKeyCreate) {
-  return request<ApiKeyMasked>(`/v1/accounts/${accountId}/api-keys`, {
-    method: "POST",
-    body,
+  return apiFetch(path, {
+    method: op.method,
+    headers,
+    body:
+      options.body === undefined ? undefined : JSON.stringify(options.body),
+    signal: options.signal,
   });
 }
 
-export function getStrategies(params: {
-  account_id: string;
-  status?: StrategyStatus;
-}) {
-  return request<Strategy[]>("/v1/strategies", { query: params });
+/**
+ * Typed-ish helper: parses JSON on 2xx; on any other status returns structured
+ * ApiFailure (501 → stub_not_implemented). Never invents success data.
+ */
+export async function apiCall<T = unknown>(
+  operationId: OperationId,
+  options: ApiCallOptions = {},
+): Promise<ApiResult<T>> {
+  let response: Response;
+  try {
+    response = await apiRequest(operationId, options);
+  } catch (err) {
+    return toApiFailure({
+      status: null,
+      networkMessage:
+        err instanceof Error ? err.message : "Network request failed",
+    });
+  }
+
+  const rawText = await response.text();
+  let body: unknown = undefined;
+  if (rawText.length > 0) {
+    try {
+      body = JSON.parse(rawText) as unknown;
+    } catch {
+      body = undefined;
+    }
+  }
+
+  if (response.ok) {
+    return {
+      ok: true,
+      status: response.status,
+      data: (body === undefined ? null : body) as T,
+    };
+  }
+
+  return toApiFailure({
+    status: response.status,
+    body,
+    rawText: rawText.length > 0 ? rawText : undefined,
+  });
 }
 
-export function postStrategies(body: StrategyCreate) {
-  return request<Strategy>("/v1/strategies", { method: "POST", body });
-}
-
-export function patchStrategy(strategyId: string, body: StrategyPatch) {
-  return request<Strategy>(`/v1/strategies/${strategyId}`, { method: "PATCH", body });
-}
-
-export function getMarketSymbols(params?: {
-  exchange?: string;
-  market_type?: MarketType;
-}) {
-  return request<MarketSymbol[]>("/v1/market/symbols", { query: params });
-}
-
-export function getMarketCandles(params: {
-  symbol: string;
-  interval: CandleInterval;
-  start_time?: string;
-  end_time?: string;
-  limit?: number;
-}) {
-  return request<Candle[]>("/v1/market/candles", { query: params });
-}
-
-export function getPositions(params: {
-  account_id: string;
-  symbol?: string;
-  open_only?: boolean;
-}) {
-  return request<Position[]>("/v1/positions", { query: params });
-}
-
-export function getPnlSummary(params: {
-  account_id: string;
-  from?: string;
-  to?: string;
-}) {
-  return request<PnlSummary>("/v1/pnl/summary", { query: params });
-}
-
-export function getReportsTrades(params: {
-  account_id: string;
-  strategy_id?: string;
-  from?: string;
-  to?: string;
-  limit?: number;
-}) {
-  return request<TradeReport[]>("/v1/reports/trades", { query: params });
-}
-
-export function getKillSwitchStatus() {
-  return request<KillSwitchStatus>("/v1/kill-switch");
-}
-
-export function postKillSwitch(body: KillSwitchRequest) {
-  return request<KillSwitchStatus>("/v1/kill-switch", { method: "POST", body });
-}
-
-export function getAlerts(params: {
-  account_id: string;
-  acknowledged?: boolean;
-  severity?: AlertSeverity;
-  limit?: number;
-}) {
-  return request<Alert[]>("/v1/alerts", { query: params });
-}
+export { API_OPERATIONS } from "./operations";
+export type { OperationId, ApiOperation, HttpMethod } from "./operations";
+export {
+  parseGatewayError,
+  toApiFailure,
+  formatApiFailureForUi,
+  kindFromHttpStatus,
+} from "./errors";
+export type {
+  GatewayError,
+  GatewayErrorDetail,
+  ApiFailure,
+  ApiFailureKind,
+  ApiResult,
+  ApiSuccess,
+} from "./errors";

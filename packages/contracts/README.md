@@ -11,7 +11,7 @@
 
 | Path | Purpose |
 |---|---|
-| `VERSION` | Semver (hiện `0.1.0` — phải khớp `openapi.info.version`) |
+| `VERSION` | Semver (hiện `0.3.0` — phải khớp `openapi.info.version`) |
 | `openapi/openapi.yaml` | HTTP API (OpenAPI 3.0.3) — MVP ops có `x-mvp: true` |
 | `events/` | Event-bus JSON Schema |
 | `rbac/roles.yaml` | Roles, permissions, dual-control (SoD) |

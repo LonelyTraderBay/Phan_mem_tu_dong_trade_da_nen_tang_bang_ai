@@ -1,18 +1,18 @@
-"""Accounts + masked API keys paper stubs."""
+"""Paper stubs: postAccounts / postAccountApiKeys (masked credentials only)."""
 
 from __future__ import annotations
 
-from typing import Literal
-from uuid import uuid4
+from typing import Annotated, Literal
+from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
-from gateway.auth_deps import BearerUser
-from gateway.errors import error_response
-from gateway.store import iso_now, store
+from gateway import account_store, auth_store
+from gateway.deps import require_auth
+from gateway.errors import ErrorDetail, error_response
 
-router = APIRouter(prefix="/v1", tags=["Accounts"])
+router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
 
 class AccountCreate(BaseModel):
@@ -22,6 +22,17 @@ class AccountCreate(BaseModel):
     testnet: bool = True
 
 
+class Account(BaseModel):
+    id: str
+    name: str
+    exchange: str
+    market_type: Literal["spot", "futures"]
+    testnet: bool
+    status: Literal["active", "disabled", "error"]
+    created_at: str
+    updated_at: str | None = None
+
+
 class ApiKeyCreate(BaseModel):
     label: str = Field(min_length=1, max_length=100)
     api_key: str = Field(min_length=1)
@@ -29,57 +40,49 @@ class ApiKeyCreate(BaseModel):
     passphrase: str | None = Field(default=None, min_length=1)
 
 
-def mask_api_key(api_key: str) -> str:
-    """Return masked key showing only last 4 characters."""
-    last4 = api_key[-4:] if len(api_key) >= 4 else api_key
-    return f"****{last4}"
+class ApiKeyMasked(BaseModel):
+    id: str
+    account_id: str
+    label: str
+    masked_api_key: str
+    created_at: str
+    last_validated_at: str | None = None
 
 
-@router.post("/accounts", status_code=201, operation_id="postAccounts")
-def post_accounts(_user: BearerUser, body: AccountCreate) -> dict:
-    now = iso_now()
-    account_id = str(uuid4())
-    account = {
-        "id": account_id,
-        "name": body.name,
-        "exchange": body.exchange,
-        "market_type": body.market_type,
-        "testnet": body.testnet,
-        "status": "active",
-        "created_at": now,
-        "updated_at": now,
-    }
-    store.accounts[account_id] = account
-    store.api_keys.setdefault(account_id, [])
-    return account
-
-
-@router.post(
-    "/accounts/{account_id}/api-keys",
-    status_code=201,
-    operation_id="postAccountApiKeys",
-)
-def post_account_api_keys(
-    account_id: str,
-    _user: BearerUser,
-    body: ApiKeyCreate,
+@router.post("", status_code=201, response_model=Account)
+def create_account(
+    body: AccountCreate,
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
 ):
-    if account_id not in store.accounts:
+    # Never log request body secrets (none on this path).
+    created = account_store.create_account(
+        name=body.name,
+        exchange=body.exchange,
+        market_type=body.market_type,
+        testnet=body.testnet,
+    )
+    return Account(**created)
+
+
+@router.post("/{account_id}/api-keys", status_code=201, response_model=ApiKeyMasked)
+def register_api_key(
+    account_id: UUID,
+    body: ApiKeyCreate,
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+):
+    # Never log api_key / api_secret / passphrase.
+    result = account_store.register_api_key(
+        account_id=str(account_id),
+        label=body.label,
+        api_key=body.api_key,
+        api_secret=body.api_secret,
+        passphrase=body.passphrase,
+    )
+    if result is None:
         return error_response(
             404,
-            "NOT_FOUND",
-            "Account not found",
-            details=[{"field": "account_id", "reason": "unknown"}],
+            code="not_found",
+            message="Account not found",
+            details=[ErrorDetail(field="account_id", reason="unknown_account")],
         )
-    # Never put full api_key/secret in response or logs.
-    key_id = str(uuid4())
-    record = {
-        "id": key_id,
-        "account_id": account_id,
-        "label": body.label,
-        "masked_api_key": mask_api_key(body.api_key),
-        "created_at": iso_now(),
-        "last_validated_at": None,
-    }
-    store.api_keys.setdefault(account_id, []).append(record)
-    return record
+    return ApiKeyMasked(**result)

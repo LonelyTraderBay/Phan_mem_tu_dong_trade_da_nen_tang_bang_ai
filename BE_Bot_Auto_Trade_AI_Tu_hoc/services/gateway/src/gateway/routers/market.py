@@ -1,105 +1,83 @@
-"""Market symbols + candles paper fixtures."""
+"""Paper stubs: getMarketSymbols / getMarketCandles. Fixture data; not live."""
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Literal
+from datetime import datetime
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Depends, Query, Response
+from pydantic import BaseModel, Field
 
-from gateway.auth_deps import BearerUser
+from gateway import auth_store, market_store
+from gateway.deps import require_auth
 
-router = APIRouter(prefix="/v1/market", tags=["Market"])
+router = APIRouter(prefix="/market", tags=["Market"])
 
-SYMBOLS = [
-    {
-        "symbol": "BTC/USDT",
-        "base_asset": "BTC",
-        "quote_asset": "USDT",
-        "exchange": "binance",
-        "market_type": "spot",
-        "active": True,
-        "price_precision": 2,
-        "quantity_precision": 6,
-    },
-    {
-        "symbol": "ETH/USDT",
-        "base_asset": "ETH",
-        "quote_asset": "USDT",
-        "exchange": "binance",
-        "market_type": "spot",
-        "active": True,
-        "price_precision": 2,
-        "quantity_precision": 5,
-    },
-]
+MarketType = Literal["spot", "futures"]
+CandleInterval = Literal["1m", "5m", "15m", "1h", "4h", "1d"]
+
+# OpenAPI MarketSymbol / Candle have no stale field — use response header only.
+STALE_HEADER = "X-Market-Stale"
 
 
-@router.get("/symbols", operation_id="getMarketSymbols")
-def get_market_symbols(
+class MarketSymbol(BaseModel):
+    symbol: str
+    base_asset: str
+    quote_asset: str
+    exchange: str
+    market_type: MarketType
+    active: bool
+    price_precision: int | None = Field(default=None, ge=0)
+    quantity_precision: int | None = Field(default=None, ge=0)
+
+
+class Candle(BaseModel):
+    symbol: str
+    interval: str
+    open_time: str
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float = Field(ge=0)
+    close_time: str | None = None
+
+
+def _mark_stale(response: Response) -> None:
+    """Paper fixtures are never a live feed — always advertise stale."""
+    if market_store.MARKET_STALE:
+        response.headers[STALE_HEADER] = "true"
+
+
+@router.get("/symbols", response_model=list[MarketSymbol])
+def list_market_symbols(
     response: Response,
-    _user: BearerUser,
-    exchange: str | None = None,
-    market_type: Literal["spot", "futures"] | None = None,
-) -> list[dict]:
-    # Paper feed is not live — mark stale for FE UX.
-    response.headers["X-Data-Stale"] = "true"
-    items = SYMBOLS
-    if exchange:
-        items = [s for s in items if s["exchange"] == exchange]
-    if market_type:
-        items = [s for s in items if s["market_type"] == market_type]
-    return items
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+    exchange: Annotated[str | None, Query()] = None,
+    market_type: Annotated[MarketType | None, Query()] = None,
+):
+    _mark_stale(response)
+    rows = market_store.list_symbols(exchange=exchange, market_type=market_type)
+    return [MarketSymbol(**row) for row in rows]
 
 
-@router.get("/candles", operation_id="getMarketCandles")
-def get_market_candles(
+@router.get("/candles", response_model=list[Candle])
+def list_market_candles(
     response: Response,
-    _user: BearerUser,
-    symbol: str = Query(...),
-    interval: Literal["1m", "5m", "15m", "1h", "4h", "1d"] = Query(...),
-    start_time: datetime | None = None,
-    end_time: datetime | None = None,
-    limit: int = Query(default=500, ge=1, le=1000),
-) -> list[dict]:
-    response.headers["X-Data-Stale"] = "true"
-    # Deterministic stub candles (server-side fixture only).
-    end = end_time or datetime.now(timezone.utc)
-    if end.tzinfo is None:
-        end = end.replace(tzinfo=timezone.utc)
-    step = {
-        "1m": timedelta(minutes=1),
-        "5m": timedelta(minutes=5),
-        "15m": timedelta(minutes=15),
-        "1h": timedelta(hours=1),
-        "4h": timedelta(hours=4),
-        "1d": timedelta(days=1),
-    }[interval]
-    count = min(limit, 10)
-    base_price = 50000.0 if symbol.startswith("BTC") else 3000.0
-    candles: list[dict] = []
-    for i in range(count - 1, -1, -1):
-        open_time = end - step * (i + 1)
-        close_time = open_time + step
-        o = base_price + i
-        candles.append(
-            {
-                "symbol": symbol,
-                "interval": interval,
-                "open_time": open_time.isoformat().replace("+00:00", "Z"),
-                "close_time": close_time.isoformat().replace("+00:00", "Z"),
-                "open": o,
-                "high": o + 5,
-                "low": o - 5,
-                "close": o + 1,
-                "volume": 1.0,
-            }
-        )
-    if start_time is not None:
-        st = start_time if start_time.tzinfo else start_time.replace(tzinfo=timezone.utc)
-        candles = [
-            c
-            for c in candles
-            if datetime.fromisoformat(c["open_time"].replace("Z", "+00:00")) >= st
-        ]
-    return candles
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+    symbol: Annotated[str, Query(min_length=1)],
+    interval: Annotated[CandleInterval, Query()],
+    start_time: Annotated[datetime | None, Query()] = None,
+    end_time: Annotated[datetime | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 500,
+):
+    _mark_stale(response)
+    rows = market_store.list_candles(
+        symbol=symbol,
+        interval=interval,
+        start_time=start_time,
+        end_time=end_time,
+        limit=limit,
+    )
+    # Unknown symbol → empty list + stale header (no stale body field in OpenAPI).
+    return [Candle(**row) for row in rows]

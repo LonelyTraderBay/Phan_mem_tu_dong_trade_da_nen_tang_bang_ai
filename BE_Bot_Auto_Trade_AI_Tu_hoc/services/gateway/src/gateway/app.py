@@ -1,38 +1,62 @@
-"""FastAPI application — Phase 1 paper stubs for In-MVP Gateway routes."""
+"""FastAPI application skeleton for the API Gateway.
+
+System probes live on the app root. MVP business routes mount under /v1.
+"""
 
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from gateway.auth_deps import AuthError, auth_error_handler
-from gateway.routers import (
-    accounts,
-    alerts,
-    auth,
-    health,
-    kill_switch,
-    market,
-    orders,
-    portfolio,
-    reports,
-    strategies,
-)
+from gateway.errors import GatewayError, error_response
+from gateway.routers import v1_router
+from gateway.ws_endpoint import router as ws_router
 
 app = FastAPI(
     title="gateway",
     version="0.1.0",
-    description="API Gateway paper stubs (P1-BE-PAPER-STUB). In-memory only.",
+    description=(
+        "API Gateway. Auth, accounts, strategies, market, positions/PnL, "
+        "trade-report, kill-switch, alerts under /v1; paper WebSocket at /ws "
+        "(ticket via postWsTicket)."
+    ),
 )
 
-app.add_exception_handler(AuthError, auth_error_handler)
+# Paper local UI (Next.js :3000) → Gateway :8000. Without this, browsers report
+# "Failed to fetch" on login. Keep origins tight to local FE only.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(health.router)
-app.include_router(auth.router)
-app.include_router(accounts.router)
-app.include_router(strategies.router)
-app.include_router(market.router)
-app.include_router(portfolio.router)
-app.include_router(reports.router)
-app.include_router(kill_switch.router)
-app.include_router(alerts.router)
-app.include_router(orders.router)
+
+@app.exception_handler(GatewayError)
+async def gateway_error_handler(_request: Request, exc: GatewayError) -> JSONResponse:
+    return error_response(
+        exc.status_code,
+        code=exc.code,
+        message=exc.message,
+        details=exc.details,
+        trace_id=exc.trace_id,
+    )
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/ready")
+def ready() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+app.include_router(v1_router)
+app.include_router(ws_router)

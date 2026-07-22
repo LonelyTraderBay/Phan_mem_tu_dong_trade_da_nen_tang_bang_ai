@@ -1,18 +1,22 @@
-"""Strategies CRUD paper stubs with fail-closed activate guard."""
+"""Paper stubs: getStrategies / postStrategies / patchStrategy.
+
+Activate (status→active) runs internal paper path: credentials → risk → OMS → ledger.
+"""
 
 from __future__ import annotations
 
-from typing import Literal
-from uuid import UUID, uuid4
+from typing import Annotated, Literal
+from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
-from gateway.auth_deps import BearerUser
-from gateway.errors import error_response
-from gateway.store import iso_now, store
+from gateway import account_store, auth_store, kill_switch_store, risk_guard, strategy_store
+from gateway.deps import require_auth
+from gateway.errors import ErrorDetail, error_response
+from gateway.trading import strategy_runner
 
-router = APIRouter(prefix="/v1", tags=["Strategies"])
+router = APIRouter(prefix="/strategies", tags=["Strategies"])
 
 StrategyStatus = Literal["draft", "active", "paused", "stopped"]
 Timeframe = Literal["1m", "5m", "15m", "1h", "4h", "1d"]
@@ -36,94 +40,123 @@ class StrategyPatch(BaseModel):
     stop_loss_percent: float | None = Field(default=None, gt=0, le=100)
 
 
-def _reject_if_cannot_activate():
-    """Fail-closed: never activate when kill-switch engaged or risk unavailable."""
-    if store.kill_switch_engaged:
-        return error_response(
-            409,
-            "KILL_SWITCH_ACTIVE",
-            "Cannot activate strategy while kill-switch is engaged",
-        )
-    if not store.risk_available:
-        return error_response(
-            403,
-            "RISK_UNAVAILABLE",
-            "Cannot activate strategy while risk service is unavailable",
-        )
-    return None
+class Strategy(BaseModel):
+    id: str
+    account_id: str
+    name: str
+    symbol: str
+    timeframe: str
+    status: StrategyStatus
+    created_at: str
+    updated_at: str | None = None
+    max_position_size: float | None = None
+    stop_loss_percent: float | None = None
 
 
-@router.get("/strategies", operation_id="getStrategies")
-def get_strategies(
-    _user: BearerUser,
-    account_id: UUID = Query(...),
-    status: StrategyStatus | None = None,
-) -> list[dict]:
-    items = [
-        s
-        for s in store.strategies.values()
-        if s["account_id"] == str(account_id)
-        and (status is None or s["status"] == status)
-    ]
-    return items
+@router.get("", response_model=list[Strategy])
+def list_strategies(
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+    account_id: Annotated[UUID | None, Query()] = None,
+    status: Annotated[StrategyStatus | None, Query()] = None,
+):
+    rows = strategy_store.list_strategies(
+        account_id=str(account_id) if account_id is not None else None,
+        status=status,
+    )
+    return [Strategy(**row) for row in rows]
 
 
-@router.post("/strategies", status_code=201, operation_id="postStrategies")
-def post_strategies(_user: BearerUser, body: StrategyCreate):
+@router.post("", status_code=201, response_model=Strategy)
+def create_strategy(
+    body: StrategyCreate,
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+):
     account_id = str(body.account_id)
-    if account_id not in store.accounts:
+    if account_store.get_account(account_id) is None:
         return error_response(
             404,
-            "NOT_FOUND",
-            "Account not found",
-            details=[{"field": "account_id", "reason": "unknown"}],
+            code="not_found",
+            message="Account not found",
+            details=[ErrorDetail(field="account_id", reason="unknown_account")],
         )
-    initial_status: StrategyStatus = body.status or "draft"
-    if initial_status == "active":
-        blocked = _reject_if_cannot_activate()
-        if blocked is not None:
-            return blocked
-    now = iso_now()
-    strategy_id = str(uuid4())
-    strategy = {
-        "id": strategy_id,
-        "account_id": account_id,
-        "name": body.name,
-        "symbol": body.symbol,
-        "timeframe": body.timeframe,
-        "status": initial_status,
-        "created_at": now,
-        "updated_at": now,
-    }
-    if body.max_position_size is not None:
-        strategy["max_position_size"] = body.max_position_size
-    if body.stop_loss_percent is not None:
-        strategy["stop_loss_percent"] = body.stop_loss_percent
-    store.strategies[strategy_id] = strategy
-    return strategy
+    created = strategy_store.create_strategy(
+        account_id=account_id,
+        name=body.name,
+        symbol=body.symbol,
+        timeframe=body.timeframe,
+        status=body.status if body.status is not None else "draft",
+        max_position_size=body.max_position_size,
+        stop_loss_percent=body.stop_loss_percent,
+    )
+    return Strategy(**created)
 
 
-@router.patch("/strategies/{strategy_id}", operation_id="patchStrategy")
-def patch_strategy(strategy_id: str, _user: BearerUser, body: StrategyPatch):
-    strategy = store.strategies.get(strategy_id)
-    if strategy is None:
-        return error_response(
-            404,
-            "NOT_FOUND",
-            "Strategy not found",
-            details=[{"field": "strategy_id", "reason": "unknown"}],
-        )
-    patch = body.model_dump(exclude_unset=True)
-    if not patch:
+@router.patch("/{strategy_id}", response_model=Strategy)
+def patch_strategy(
+    strategy_id: UUID,
+    body: StrategyPatch,
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+):
+    fields_set = body.model_fields_set
+    if not fields_set:
         return error_response(
             400,
-            "VALIDATION_ERROR",
-            "At least one field is required",
+            code="validation_error",
+            message="At least one field is required",
+            details=[ErrorDetail(field="body", reason="min_properties")],
         )
-    if patch.get("status") == "active":
-        blocked = _reject_if_cannot_activate()
-        if blocked is not None:
-            return blocked
-    strategy.update(patch)
-    strategy["updated_at"] = iso_now()
-    return strategy
+
+    existing = strategy_store.get_strategy(str(strategy_id))
+    if existing is None:
+        return error_response(
+            404,
+            code="not_found",
+            message="Strategy not found",
+            details=[ErrorDetail(field="strategy_id", reason="unknown_strategy")],
+        )
+
+    activating = "status" in fields_set and body.status == "active" and existing.status != "active"
+    if activating:
+        ks = kill_switch_store.get_status()
+        if ks.get("engaged") and kill_switch_store.level_rank(ks.get("level")) >= 2:
+            return error_response(
+                403,
+                code="kill_switch_engaged",
+                message=(
+                    f"Kill-switch {ks.get('level')} engaged; "
+                    "strategy activate blocked (paper staging)"
+                ),
+                details=[ErrorDetail(field="status", reason="kill_switch_l2_plus")],
+                trace_id=ks.get("trace_id"),
+            )
+        # Fail-closed risk dependency (Constitution II / P1-BE-08).
+        risk_guard.ensure_entry_allowed()
+        # Paper path: credentials → risk_engine (L1) → OMS → ledger (T009–T012, T018).
+        result = strategy_runner.run_on_activate(existing)
+        if not result.ok:
+            return error_response(
+                result.status_code,
+                code=result.code,
+                message=result.message,
+                details=list(result.details),
+                trace_id=result.trace_id or None,
+            )
+
+    updated = strategy_store.patch_strategy(
+        str(strategy_id),
+        name=body.name if "name" in fields_set else None,
+        status=body.status if "status" in fields_set else None,
+        timeframe=body.timeframe if "timeframe" in fields_set else None,
+        max_position_size=body.max_position_size if "max_position_size" in fields_set else None,
+        stop_loss_percent=body.stop_loss_percent if "stop_loss_percent" in fields_set else None,
+        set_max_position_size="max_position_size" in fields_set,
+        set_stop_loss_percent="stop_loss_percent" in fields_set,
+    )
+    if updated is None:
+        return error_response(
+            404,
+            code="not_found",
+            message="Strategy not found",
+            details=[ErrorDetail(field="strategy_id", reason="unknown_strategy")],
+        )
+    return Strategy(**updated)

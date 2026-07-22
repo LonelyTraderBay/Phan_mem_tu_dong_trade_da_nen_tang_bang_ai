@@ -1,46 +1,73 @@
-"""Portfolio positions + PnL summary (server-side numbers only)."""
+"""Paper stubs: getPositions / getPnlSummary. Server-side PnL only; empty OK."""
 
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel, Field
 
-from gateway.auth_deps import BearerUser
-from gateway.store import iso_now
+from gateway import auth_store, portfolio_store
+from gateway.deps import require_auth
 
-router = APIRouter(prefix="/v1", tags=["Portfolio"])
+router = APIRouter(tags=["Portfolio"])
+
+PositionSide = Literal["long", "short"]
 
 
-@router.get("/positions", operation_id="getPositions")
+class Position(BaseModel):
+    id: str
+    account_id: str
+    strategy_id: str | None = None
+    symbol: str
+    side: PositionSide
+    quantity: float = Field(ge=0)
+    entry_price: float = Field(ge=0)
+    mark_price: float | None = Field(default=None, ge=0)
+    unrealized_pnl: float | None = None
+    leverage: float | None = Field(default=None, ge=1)
+    opened_at: str
+
+
+class PnlSummary(BaseModel):
+    account_id: str
+    currency: str
+    realized_pnl: float
+    unrealized_pnl: float
+    total_pnl: float
+    gross_profit: float | None = None
+    gross_loss: float | None = None
+    trade_count: int | None = Field(default=None, ge=0)
+    calculated_at: str
+
+
+@router.get("/positions", response_model=list[Position])
 def get_positions(
-    _user: BearerUser,
-    account_id: UUID = Query(...),
-    symbol: str | None = None,
-    open_only: bool = Query(default=True),
-) -> list[dict]:
-    # Empty paper ledger is schema-valid.
-    _ = (account_id, symbol, open_only)
-    return []
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+    account_id: Annotated[UUID, Query()],
+    symbol: Annotated[str | None, Query()] = None,
+    open_only: Annotated[bool, Query()] = True,
+):
+    rows = portfolio_store.list_positions(
+        account_id=str(account_id),
+        symbol=symbol,
+        open_only=open_only,
+    )
+    return [Position(**row) for row in rows]
 
 
-@router.get("/pnl/summary", operation_id="getPnlSummary")
+@router.get("/pnl/summary", response_model=PnlSummary)
 def get_pnl_summary(
-    _user: BearerUser,
-    account_id: UUID = Query(...),
-    from_: datetime | None = Query(default=None, alias="from"),
-    to: datetime | None = None,
-) -> dict:
-    _ = (from_, to)
-    return {
-        "account_id": str(account_id),
-        "currency": "USDT",
-        "realized_pnl": 0.0,
-        "unrealized_pnl": 0.0,
-        "total_pnl": 0.0,
-        "gross_profit": 0.0,
-        "gross_loss": 0.0,
-        "trade_count": 0,
-        "calculated_at": iso_now(),
-    }
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+    account_id: Annotated[UUID, Query()],
+    from_time: Annotated[datetime | None, Query(alias="from")] = None,
+    to_time: Annotated[datetime | None, Query(alias="to")] = None,
+):
+    row = portfolio_store.get_pnl_summary(
+        account_id=str(account_id),
+        from_time=from_time,
+        to_time=to_time,
+    )
+    return PnlSummary(**row)

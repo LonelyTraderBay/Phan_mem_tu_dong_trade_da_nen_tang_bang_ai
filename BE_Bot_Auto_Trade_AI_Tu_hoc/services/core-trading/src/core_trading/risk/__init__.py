@@ -1,11 +1,8 @@
-"""Risk Management: last line of defense — limits, kill-switch, and calendar/margin/fee checks before any order leaves the system."""
+"""Risk Management boundary.
 
-from core_trading.risk.fail_closed import (
-    RiskUnavailableError,
-    assert_entries_allowed,
-)
+Phase-1 paper implementation lives in Gateway:
+`gateway.trading.risk_engine` (+ `gateway.risk_guard` fail-closed flag).
+This package documents the module boundary for later extraction.
+"""
 
-__all__ = [
-    "RiskUnavailableError",
-    "assert_entries_allowed",
-]
+PHASE1_IMPL = "gateway.trading.risk_engine"

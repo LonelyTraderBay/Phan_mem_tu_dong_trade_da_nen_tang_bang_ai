@@ -12,4 +12,8 @@
 
 ## Typical channels (names finalized in contracts)
 
-Market candles, orders/positions updates, alerts/SEV, kill-switch state, approval queue, backtest job progress.
+**Paper In-MVP (RFC-0003, locked):** `market.candles`, `trading.orders`, `trading.positions`, `risk.kill_switch`, `ops.alerts`.
+
+Auth: `POST /v1/ws/ticket` (`postWsTicket`) → connect `{ws_path}?ticket=`.
+
+Later (not paper MVP WS): approval queue, backtest job progress.

@@ -1,100 +1,293 @@
-version: "1.1.0"
-feature: "001-mvp-feature-scope"
-updated_at: "2026-07-22"
+version: "1.3.0"
+feature: null
+updated_at: "2026-07-23"
+active_assignment: null
+# Last Owner: Active LIVE-VENUE-ADAPTER — Binance mainnet ≤5% NAV LIVE_NAV_QUOTE=100000.
 policy: >
   AI MUST only work on assignment ids with status=active that the Owner
   explicitly named in chat. status=blocked means do not start. status=done
-  means do not reopen without Owner request. For Phase-1 parallel stubs use
-  docs/shared/parallel-dispatch-phase1.md (+ .yaml) and spawn at most one BE
-  and one FE task per wave.
+  means do not reopen without Owner request. Spawn at most one BE and one FE
+  task in parallel unless Owner says otherwise. Contract-first; In-MVP only.
+  Priority queue: only the first non-done item may be active at a time.
+priority_queue:
+  - PROD-PAPER-HARDEN
+  - PAPER-TESTNET-ADAPTER
+  - PAPER-WS-REALTIME
+  - PROD-LIVE-PREP
+  - PROD-LIVE-STAGING-DRILLS
+  - PROD-LIVE
+  - PAPER-OPS-30D
+  - ENTERPRISE-STAGING-EVIDENCE
+  - ENTERPRISE-CI-EVIDENCE
+  - PAPER-FE-POLISH
+  - LIVE-VENUE-ADAPTER
 assignments:
   - id: GOV-HARDEN-2026-07-22
-    title: Enterprise governance hardening (OpenAPI MVP stubs, CI, rules, validators)
+    title: Enterprise governance hardening
     lane: shared
     status: done
-    allowed_paths:
-      - "AGENTS.md"
-      - ".cursor/rules/"
-      - ".github/"
-      - ".gitleaks.toml"
-      - ".gitignore"
-      - "packages/contracts/"
-      - "scripts/"
-      - "docs/shared/"
-      - "docs/architecture/"
-      - "README.md"
-      - "specs/001-mvp-feature-scope/"
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-    forbidden_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/services/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/web/"
-    notes: "Completed 2026-07-22 — governance CI + MVP OpenAPI stubs"
+    allowed_paths: ["AGENTS.md", ".cursor/rules/", ".github/", "packages/contracts/", "scripts/", "docs/shared/"]
+    notes: "Completed"
 
   - id: T014-T028
-    title: MVP matrix paper-day / deferred doc tasks (feature 001)
+    title: MVP matrix docs (001)
+    lane: shared
+    status: done
+    allowed_paths: ["specs/001-mvp-feature-scope/", "docs/shared/"]
+    notes: "Completed"
+
+  - id: P1-BE-PAPER-STUB
+    title: Phase-1 BE paper stubs
+    lane: backend
+    status: done
+    allowed_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    notes: "Waves P1-BE-01..08 complete"
+
+  - id: P1-FE-PAPER-STUB
+    title: Phase-1 FE paper stubs
+    lane: frontend
+    status: done
+    allowed_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    forbidden_paths: ["BE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    notes: "Waves P1-FE-01..08 complete"
+
+  - id: TRADING-E2E
+    title: Paper trading E2E (Speckit 002)
+    lane: both
+    status: done
+    feature_dir: "specs/002-paper-trading-e2e"
+    tasks_file: "specs/002-paper-trading-e2e/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "specs/002-paper-trading-e2e/"
+      - "docs/shared/"
+    notes: "Demo-complete 2026-07-22. Do not reopen without Owner request."
+
+  - id: PROD-PAPER-HARDEN
+    title: Phase-1 prod-paper harden (Speckit 003)
+    lane: both
+    status: done
+    feature_dir: "specs/003-prod-paper-harden"
+    tasks_file: "specs/003-prod-paper-harden/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "specs/003-prod-paper-harden/"
+      - "docs/shared/"
+      - "AGENTS.md"
+    forbidden_paths: []
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: RFC-0002 levels L1–L4, recon+RECON_MISMATCH,
+      paper-ops tracker, contracts 0.2.0. Gateway pytest 61 PASS.
+      ≥30-day paper remains Owner calendar. Do not reopen without Owner.
+
+  - id: PAPER-TESTNET-ADAPTER
+    title: External crypto paper/testnet adapter (Binance Spot Testnet)
+    lane: backend
+    status: done
+    feature_dir: "specs/004-binance-testnet-adapter"
+    tasks_file: "specs/004-binance-testnet-adapter/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "docs/shared/"
+      - "specs/004-binance-testnet-adapter/"
+      - "AGENTS.md"
+      - ".env.example"
+      - ".specify/"
+    forbidden_paths: ["FE_Bot_Auto_Trade_AI_Tu_Hoc/"]
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: Binance Spot Testnet adapter + host allowlist;
+      PAPER_VENUE_MODE internal|binance_testnet; mock tests; gateway 68 PASS.
+      Live drill: set mode + testnet keys via API (never commit). No reopen
+      without Owner.
+
+  - id: PAPER-WS-REALTIME
+    title: Paper WS realtime (contract-first)
+    lane: both
+    status: done
+    feature_dir: "specs/005-paper-ws-realtime"
+    tasks_file: "specs/005-paper-ws-realtime/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+      - "docs/shared/"
+      - "specs/005-paper-ws-realtime/"
+      - "AGENTS.md"
+      - ".specify/"
+    task_ids_prefix: "T"
+    notes: >
+      Done 2026-07-22: RFC-0003, contracts 0.3.0 postWsTicket, /ws hub,
+      FE WsStatusBar stale UX. Gateway pytest 73 PASS. No reopen without Owner.
+
+  - id: PROD-LIVE-PREP
+    title: Phase-2 prod-live prep (chaos / gates)
+    lane: shared
+    status: done
+    feature_dir: "specs/007-phase2-remaining-gates-docs"
+    tasks_file: "specs/007-phase2-remaining-gates-docs/tasks.md"
+    allowed_paths:
+      - "docs/shared/"
+      - "specs/006-prod-live-chaos-docs/"
+      - "specs/007-phase2-remaining-gates-docs/"
+      - "AGENTS.md"
+      - ".specify/"
+    forbidden_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+    task_ids_prefix: "T"
+    notes: >
+      Docs waves complete 2026-07-22:
+      (1) chaos-checklist.md C-01..C-06 (006);
+      (2) phase2-remaining-gates.md G-01..G-06 (007) — Owner requested full remaining pack.
+      Did NOT implement live capital, automation, or Deferred.
+      release-gates Phase-2 checkboxes stay open until human evidence.
+      Docs complete; staging drills → PROD-LIVE-STAGING-DRILLS.
+      Live capital still requires separate Owner scope.
+
+  - id: PROD-LIVE-STAGING-DRILLS
+    title: Phase-2 paper/staging drill automation + evidence registry
+    lane: both
+    status: done
+    feature_dir: "specs/008-phase2-staging-drills"
+    tasks_file: "specs/008-phase2-staging-drills/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "docs/shared/"
+      - "specs/008-phase2-staging-drills/"
+      - "AGENTS.md"
+      - ".specify/"
+    forbidden_paths:
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+    task_ids_prefix: "T"
+    notes: >
+      Owner 2026-07-23 continue Phase-2 toward completion.
+      Delivered paper pytest drills + evidence registry + signoff templates.
+      Did NOT tick release-gates Pass; did NOT enable live capital or Deferred.
+
+  - id: PROD-LIVE
+    title: Prod-live capital envelope (≤5% NAV)
+    lane: backend
+    status: done
+    feature_dir: "specs/009-prod-live-capital-envelope"
+    tasks_file: "specs/009-prod-live-capital-envelope/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "docs/shared/"
+      - "specs/009-prod-live-capital-envelope/"
+      - "AGENTS.md"
+      - ".env.example"
+      - ".specify/"
+    forbidden_paths:
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+    task_ids_prefix: "T"
+    notes: >
+      Owner 2026-07-23 Active PROD-LIVE scope ≤5% NAV (ellipsis = incomplete NAV/venue).
+      Delivered live_capital fail-closed envelope; refuse mainnet submit
+      (live_venue_not_implemented). No live keys, no Deferred, no fake Phase-2 Pass.
+      Next: Owner fill NAV + Phase-2 signoffs; then live adapter assignment.
+
+  - id: PAPER-OPS-30D
+    title: Paper ops clock (superseded — tracker optional)
     lane: shared
     status: done
     allowed_paths:
-      - "packages/contracts/openapi/"
       - "docs/shared/"
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
-      - "specs/001-mvp-feature-scope/"
-    notes: "Feature 001 scope docs complete"
-
-  - id: P1-BE-PAPER-STUB
-    title: Phase-1 BE paper stubs (In-MVP only; parallel dispatch)
-    lane: backend
-    status: active
-    allowed_paths:
-      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
-    forbidden_paths:
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
-      - "packages/contracts/"
-    dispatch_file: "docs/shared/parallel-dispatch-phase1.yaml"
-    task_ids:
-      - P1-BE-01
-      - P1-BE-02
-      - P1-BE-03
-      - P1-BE-04
-      - P1-BE-05
-      - P1-BE-06
-      - P1-BE-07
-      - P1-BE-08
-    notes: >
-      Owner-activated for Cursor parallel BE subagents. Implement OpenAPI
-      stubs only; no live broker; no Deferred. Do not edit contracts without RFC.
-
-  - id: P1-FE-PAPER-STUB
-    title: Phase-1 FE paper stubs (In-MVP only; parallel dispatch)
-    lane: frontend
-    status: active
-    allowed_paths:
-      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "docs/shared/agent-assignment.yaml"
     forbidden_paths:
       - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
       - "packages/contracts/"
-    dispatch_file: "docs/shared/parallel-dispatch-phase1.yaml"
-    task_ids:
-      - P1-FE-01
-      - P1-FE-02
-      - P1-FE-03
-      - P1-FE-04
-      - P1-FE-05
-      - P1-FE-06
-      - P1-FE-07
-      - P1-FE-08
     notes: >
-      Owner-activated for Cursor parallel FE subagents. Bind existing OpenAPI
-      only; handle 501; no client PnL truth; no Deferred UI as live.
+      Superseded 2026-07-23 Owner amend option B: ≥30-day paper removed as
+      Pass requirement; paper-ops-tracker optional only. Do not reopen for
+      calendar bumps unless Owner requests optional log updates.
 
-  - id: TRADING-E2E
-    title: Full paper broker trading implementation
+  - id: ENTERPRISE-STAGING-EVIDENCE
+    title: Paper/staging evidence export + runbook (C-01..C-06, G-01)
     lane: both
-    status: blocked
+    status: done
+    feature_dir: "specs/010-enterprise-staging-evidence"
+    tasks_file: "specs/010-enterprise-staging-evidence/tasks.md"
     allowed_paths:
       - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "docs/shared/"
+      - "specs/010-enterprise-staging-evidence/"
+      - ".specify/"
+    forbidden_paths:
       - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
       - "packages/contracts/"
-    notes: "Still blocked — paper stub ≠ live/paper broker E2E"
+    task_ids_prefix: "T"
+    notes: >
+      Owner 2026-07-23 Active ENTERPRISE-STAGING-EVIDENCE — evidence export
+      + staging runbook for C-01..C-06 and G-01 only. Did NOT tick release-gates
+      Pass, no live keys, no mainnet, no Deferred.
+
+  - id: ENTERPRISE-CI-EVIDENCE
+    title: CI job for phase-2 tooling evidence export + artifacts
+    lane: shared
+    status: done
+    feature_dir: "specs/011-enterprise-ci-evidence"
+    tasks_file: "specs/011-enterprise-ci-evidence/tasks.md"
+    allowed_paths:
+      - ".github/workflows/"
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/services/gateway/"
+      - "docs/shared/"
+      - "specs/011-enterprise-ci-evidence/"
+      - ".specify/"
+    forbidden_paths:
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+    task_ids_prefix: "T"
+    notes: >
+      Owner 2026-07-23 Active ENTERPRISE-CI-EVIDENCE — CI runs
+      export_phase2_evidence.py, fails on tooling_FAIL, uploads artifacts.
+      Did NOT tick release-gates Pass; no live keys; no mainnet; no Deferred.
+
+  - id: PAPER-FE-POLISH
+    title: Strategy list UX + Account ID prefill
+    lane: frontend
+    status: done
+    feature_dir: "specs/012-paper-fe-polish"
+    tasks_file: "specs/012-paper-fe-polish/tasks.md"
+    allowed_paths:
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "docs/shared/"
+      - "specs/012-paper-fe-polish/"
+    forbidden_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+    task_ids_prefix: "T"
+    notes: >
+      Owner 2026-07-23 Active PAPER-FE-POLISH — lastAccountId session prefill,
+      Strategies list badges + auto-load, Dashboard/Alerts/Accounts wire.
+      No Deferred; no live.
+
+  - id: LIVE-VENUE-ADAPTER
+    title: Binance mainnet live venue adapter (≤5% NAV)
+    lane: backend
+    status: done
+    feature_dir: "specs/013-live-venue-adapter"
+    tasks_file: "specs/013-live-venue-adapter/tasks.md"
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "docs/shared/"
+      - "specs/013-live-venue-adapter/"
+      - ".env.example"
+      - ".specify/"
+    forbidden_paths:
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+    task_ids_prefix: "T"
+    notes: >
+      Owner 2026-07-23 Active LIVE-VENUE-ADAPTER — Binance mainnet, ≤5% NAV,
+      LIVE_NAV_QUOTE=100000, Phase-2 Pass recorded, contract-first.
+      Delivered binance_mainnet host allowlist + notional cap + env gates.
+      No secrets committed; LIVE_* default off in .env.example.

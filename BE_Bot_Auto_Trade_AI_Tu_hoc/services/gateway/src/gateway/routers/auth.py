@@ -1,28 +1,21 @@
-"""Auth paper stubs: login / refresh / logout."""
+"""Paper-dev auth stubs: postAuthLogin / postAuthRefresh / postAuthLogout."""
 
 from __future__ import annotations
 
-from secrets import token_urlsafe
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from pydantic import BaseModel, Field
 
-from gateway.auth_deps import BearerUser
-from gateway.errors import error_response
-from gateway.store import (
-    ACCESS_TOKEN_TTL_SECONDS,
-    PAPER_EMAIL,
-    PAPER_PASSWORD,
-    PAPER_USER_ID,
-    SessionTokens,
-    store,
-)
+from gateway import auth_store
+from gateway.deps import parse_bearer
+from gateway.errors import ErrorDetail, error_response
 
-router = APIRouter(prefix="/v1/auth", tags=["Auth"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 class LoginRequest(BaseModel):
-    email: str = Field(min_length=3)
+    email: str
     password: str = Field(min_length=8)
 
 
@@ -34,57 +27,63 @@ class LogoutRequest(BaseModel):
     refresh_token: str | None = Field(default=None, min_length=1)
 
 
-def _issue_tokens(user_id=PAPER_USER_ID) -> dict:
-    access = token_urlsafe(32)
-    refresh = token_urlsafe(32)
-    session = SessionTokens(
-        access_token=access,
-        refresh_token=refresh,
-        user_id=user_id,
-    )
-    store.access_sessions[access] = user_id
-    store.refresh_sessions[refresh] = session
-    return {
-        "access_token": access,
-        "refresh_token": refresh,
-        "token_type": "Bearer",
-        "expires_in": ACCESS_TOKEN_TTL_SECONDS,
-    }
+class TokenPair(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
+    expires_in: int
 
 
-@router.post("/login", operation_id="postAuthLogin")
-def post_auth_login(body: LoginRequest):
-    # Never log password / tokens.
-    if body.email.lower() != PAPER_EMAIL or body.password != PAPER_PASSWORD:
+class ActionResult(BaseModel):
+    success: bool
+
+
+@router.post("/login")
+def login(body: LoginRequest):
+    # Never log password or raw tokens.
+    if not auth_store.credentials_ok(body.email, body.password):
         return error_response(
             401,
-            "UNAUTHORIZED",
-            "Invalid email or password",
+            code="unauthorized",
+            message="Invalid email or password",
+            details=[ErrorDetail(field="credentials", reason="authentication_failed")],
         )
-    return _issue_tokens()
+    return TokenPair(**auth_store.issue_pair(body.email))
 
 
-@router.post("/refresh", operation_id="postAuthRefresh")
-def post_auth_refresh(body: RefreshTokenRequest):
-    session = store.refresh_sessions.pop(body.refresh_token, None)
-    if session is None:
+@router.post("/refresh")
+def refresh(body: RefreshTokenRequest):
+    pair = auth_store.refresh_pair(body.refresh_token)
+    if pair is None:
         return error_response(
             401,
-            "UNAUTHORIZED",
-            "Invalid refresh token",
+            code="unauthorized",
+            message="Invalid or expired refresh token",
+            details=[ErrorDetail(field="refresh_token", reason="invalid_token")],
         )
-    # Invalidate previous access token for this session.
-    store.access_sessions.pop(session.access_token, None)
-    return _issue_tokens(user_id=session.user_id)
+    return TokenPair(**pair)
 
 
-@router.post("/logout", operation_id="postAuthLogout")
-def post_auth_logout(
-    _user: BearerUser,
+@router.post("/logout")
+def logout(
     body: LogoutRequest | None = None,
+    authorization: Annotated[str | None, Header()] = None,
 ):
-    if body and body.refresh_token:
-        session = store.refresh_sessions.pop(body.refresh_token, None)
-        if session is not None:
-            store.access_sessions.pop(session.access_token, None)
-    return {"success": True}
+    access = parse_bearer(authorization)
+    refresh_token = body.refresh_token if body else None
+    if not access and not refresh_token:
+        return error_response(
+            401,
+            code="unauthorized",
+            message="Authentication is required",
+            details=[ErrorDetail(field="authorization", reason="missing_credentials")],
+        )
+    revoked = auth_store.revoke(access_token=access, refresh_token=refresh_token)
+    if not revoked:
+        return error_response(
+            401,
+            code="unauthorized",
+            message="Invalid or expired session",
+            details=[ErrorDetail(field="session", reason="invalid_token")],
+        )
+    return ActionResult(success=True)

@@ -1,38 +1,44 @@
-"""Alerts inbox paper stub."""
+"""Paper stub: getAlerts. Empty list OK; seed helpers for tests."""
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 
-from gateway.auth_deps import BearerUser
-from gateway.store import store
+from gateway import alerts_store, auth_store
+from gateway.deps import require_auth
 
-router = APIRouter(prefix="/v1", tags=["Alerts"])
+router = APIRouter(tags=["Alerts"])
 
 AlertSeverity = Literal["info", "warning", "critical"]
 
 
-@router.get("/alerts", operation_id="getAlerts")
+class Alert(BaseModel):
+    id: str
+    account_id: str | None = None
+    severity: AlertSeverity
+    code: str
+    message: str
+    acknowledged: bool
+    created_at: str
+    acknowledged_at: str | None = None
+
+
+@router.get("/alerts", response_model=list[Alert])
 def get_alerts(
-    _user: BearerUser,
-    account_id: UUID = Query(...),
-    acknowledged: bool | None = None,
-    severity: AlertSeverity | None = None,
-    limit: int = Query(default=50, ge=1, le=200),
-) -> list[dict]:
-    items = store.alerts
-    # account_id required by contract; paper fixture may be global (null account).
-    filtered = []
-    for alert in items:
-        aid = alert.get("account_id")
-        if aid is not None and aid != str(account_id):
-            continue
-        if acknowledged is not None and alert["acknowledged"] != acknowledged:
-            continue
-        if severity is not None and alert["severity"] != severity:
-            continue
-        filtered.append(alert)
-    return filtered[:limit]
+    _session: Annotated[auth_store.Session, Depends(require_auth)],
+    account_id: Annotated[UUID, Query()],
+    acknowledged: Annotated[bool | None, Query()] = None,
+    severity: Annotated[AlertSeverity | None, Query()] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+):
+    rows = alerts_store.list_alerts(
+        account_id=str(account_id),
+        acknowledged=acknowledged,
+        severity=severity,
+        limit=limit,
+    )
+    return [Alert(**row) for row in rows]

@@ -38,6 +38,13 @@
 7. Both-items: chờ/đồng bộ `contract_refs` trong matrix trước khi bind cứng UI.  
 8. Xong task được giao → **dừng** và báo cáo.
 
+## Paper WS (005)
+
+- Ticket: `postWsTicket` → connect `NEXT_PUBLIC_WS_URL` path from ticket (`/ws?ticket=`).
+- Channels locked RFC-0003: `market.candles`, `trading.orders`, `trading.positions`, `risk.kill_switch`, `ops.alerts`.
+- `WsStatusBar`: live vs stale; không bịa ticks khi disconnect.
+- Spec: `specs/005-paper-ws-realtime/`.
+
 ## Parallel BE
 
 BE chỉ làm trong `BE_Bot_Auto_Trade_AI_Tu_Hoc/`. Phối hợp qua contracts + RFC + matrix.
