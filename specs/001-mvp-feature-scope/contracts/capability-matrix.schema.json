@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "mvp-capability-matrix.schema.json",
   "title": "MVPCapabilityMatrix",
+  "description": "Canonical schema for Phase-1 MVP capability matrix (aligned with data-model.md). Deferred rows SHOULD set phase_return; In-MVP rows MUST set lane other than n_a unless shared docs-only.",
   "type": "object",
   "required": ["version", "updated_at", "primary_market", "operator_profile", "capabilities"],
   "additionalProperties": false,
@@ -31,9 +32,13 @@
         "contract_touch": { "type": "boolean" },
         "contract_refs": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "OpenAPI operationIds, event subjects, or docs-only:* refs"
         },
-        "phase_return": { "type": ["string", "null"] },
+        "phase_return": {
+          "type": ["string", "null"],
+          "description": "Required when status=deferred (e.g. phase-2|phase-3|phase-4)"
+        },
         "safety_critical": { "type": "boolean" }
       }
     }

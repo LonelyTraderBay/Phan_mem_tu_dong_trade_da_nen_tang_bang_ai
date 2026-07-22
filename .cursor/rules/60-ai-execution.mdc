@@ -1,0 +1,27 @@
+---
+description: Ép AI tuân constitution, matrix MVP, tasks, contracts — không đoán code
+alwaysApply: true
+---
+
+# AI Execution Guardrails (Enterprise)
+
+## Trước mọi thay đổi code
+
+1. Đọc / tuân `.specify/memory/constitution.md` và `AGENTS.md`.
+2. Chỉ làm **task ID được user giao** trong `specs/**/tasks.md`. Không tự mở rộng.
+3. Phạm vi sản phẩm: chỉ **In-MVP** trong `docs/shared/mvp-capability-matrix.md`. Cấm Deferred trừ Owner amend.
+4. Mọi REST/WS/event/RBAC public MUST có trong `packages/contracts` trước khi implement. Thiếu → dừng + RFC `docs/shared/rfcs/`.
+5. Ownership:
+   - Backend AI: chỉ `BE_Bot_Auto_Trade_AI_Tu_Hoc/`
+   - Frontend AI: chỉ `FE_Bot_Auto_Trade_AI_Tu_Hoc/`
+6. Không commit secret. Không FE tính P&L/risk làm truth. Không FE nối Kafka/DB.
+7. Blueprint kiến trúc chỉ đọc khi task chỉ định section — không “đọc hết rồi code hết”.
+8. Xong task được giao → dừng lại; không tiện tay làm task kế.
+
+## Thứ tự ưu tiên
+
+constitution → AGENTS.md → MVP matrix → tasks được assign → packages/contracts → HANDOFF lane → docs module/screen → blueprint (tham chiếu).
+
+## Speckit
+
+Không implement nghiệp vụ trading khi chưa có plan/tasks tương ứng. Không bỏ Constitution Check trong plan.

@@ -1,0 +1,180 @@
+version: "0.1.0"
+updated_at: "2026-07-22"
+primary_market: crypto_paper
+operator_profile: solo_paper
+capabilities:
+  - id: operator-auth
+    name: Operator authentication
+    description: Sign in as the single paper-trading operator.
+    status: in_mvp
+    rationale: Required before any account or bot actions.
+    lane: both
+    contract_touch: true
+    contract_refs: ["postAuthLogin", "postAuthRefresh", "postAuthLogout"]
+    phase_return: null
+    safety_critical: false
+
+  - id: broker-credentials
+    name: Secure broker credential entry
+    description: Save paper API credentials; mask after save; discourage withdraw rights.
+    status: in_mvp
+    rationale: Needed to connect paper account safely.
+    lane: both
+    contract_touch: true
+    contract_refs: ["postAccounts", "postAccountApiKeys"]
+    phase_return: null
+    safety_critical: true
+
+  - id: simple-strategy-run
+    name: Simple strategy configure start stop
+    description: Configure and run one simple paper strategy without no-code builder.
+    status: in_mvp
+    rationale: Core paper loop value.
+    lane: both
+    contract_touch: true
+    contract_refs: ["getStrategies", "postStrategies", "patchStrategy"]
+    phase_return: null
+    safety_critical: false
+
+  - id: paper-market-visibility
+    name: Paper market data visibility
+    description: See symbols/candles or live feed status for the paper venue.
+    status: in_mvp
+    rationale: Operator must see market context.
+    lane: both
+    contract_touch: true
+    contract_refs: ["getMarketSymbols", "getMarketCandles"]
+    phase_return: null
+    safety_critical: false
+
+  - id: positions-pnl
+    name: Positions and P and L visibility
+    description: View open positions and summary P and L for paper account.
+    status: in_mvp
+    rationale: Required to understand exposure.
+    lane: both
+    contract_touch: true
+    contract_refs: ["getPositions", "getPnlSummary"]
+    phase_return: null
+    safety_critical: false
+
+  - id: activity-list
+    name: Order and activity list
+    description: List recent orders/events for the paper session.
+    status: in_mvp
+    rationale: Trace what the bot did.
+    lane: both
+    contract_touch: true
+    contract_refs: ["getReportsTrades"]
+    phase_return: null
+    safety_critical: false
+
+  - id: emergency-pause
+    name: Emergency pause new entries
+    description: Pause new entries from monitoring UI; show paused state clearly.
+    status: in_mvp
+    rationale: Mandatory safety control for MVP day.
+    lane: both
+    contract_touch: true
+    contract_refs: ["getKillSwitchStatus", "postKillSwitch"]
+    phase_return: null
+    safety_critical: true
+
+  - id: basic-alerts
+    name: Basic alerts
+    description: Receive or view basic operational alerts for paper session.
+    status: in_mvp
+    rationale: Operator awareness without full SEV page stack.
+    lane: both
+    contract_touch: true
+    contract_refs: ["getAlerts"]
+    phase_return: null
+    safety_critical: false
+
+  - id: history-review
+    name: Trade history review
+    description: Filter today trades/events and export or copy a summary.
+    status: in_mvp
+    rationale: Personal record after paper day.
+    lane: both
+    contract_touch: true
+    contract_refs: ["getReportsTrades"]
+    phase_return: null
+    safety_critical: false
+
+  - id: fail-closed-entries
+    name: Fail-closed when risk unavailable
+    description: Block new paper entries if risk checks are unavailable.
+    status: in_mvp
+    rationale: Constitution capital safety.
+    lane: backend
+    contract_touch: false
+    contract_refs: ["docs-only:risk-fail-closed"]
+    phase_return: null
+    safety_critical: true
+
+  - id: mvp-capability-matrix
+    name: Published MVP capability matrix
+    description: Human and machine matrix of In-MVP vs Deferred with lane owners.
+    status: in_mvp
+    rationale: Primary deliverable of this feature.
+    lane: shared
+    contract_touch: false
+    contract_refs: ["docs-only:mvp-matrix"]
+    phase_return: null
+    safety_critical: false
+
+  - id: ai-auto-retrain-promote
+    name: Automatic model retrain and canary promote
+    description: Self-learning loop with shadow/canary promote to production.
+    status: deferred
+    rationale: Phase 3 model-risk gates; not needed for first paper day.
+    lane: n_a
+    contract_touch: false
+    contract_refs: []
+    phase_return: phase-3
+    safety_critical: false
+
+  - id: no-code-builder
+    name: No-code strategy builder
+    description: Drag-drop strategy composition UI.
+    status: deferred
+    rationale: Form-based simple strategy is enough for MVP.
+    lane: n_a
+    contract_touch: false
+    contract_refs: []
+    phase_return: phase-4
+    safety_critical: false
+
+  - id: multi-user-saas
+    name: Multi-user third-party capital SaaS
+    description: Manage other users capital on the platform.
+    status: deferred
+    rationale: Legal gate; constitution forbids without sign-off.
+    lane: n_a
+    contract_touch: false
+    contract_refs: []
+    phase_return: phase-4
+    safety_critical: true
+
+  - id: mt5-forex-adapter
+    name: MT5 forex adapter in MVP
+    description: First-class MT5 connectivity in Phase 1 MVP.
+    status: deferred
+    rationale: Crypto paper first per FR-008; MT5 has higher infra cost.
+    lane: n_a
+    contract_touch: false
+    contract_refs: []
+    phase_return: phase-2
+    safety_critical: false
+
+  - id: deep-learning-primary
+    name: Deep learning as primary signal
+    description: LSTM/Transformer as default production signal source.
+    status: deferred
+    rationale: Baseline rule/simple signal enough for paper MVP.
+    lane: n_a
+    contract_touch: false
+    contract_refs: []
+    phase_return: phase-3
+    safety_critical: false

@@ -21,9 +21,11 @@ scripts/
 
 | Doc | Role |
 |---|---|
+| [AGENTS.md](AGENTS.md) | Luật thực thi bắt buộc cho mọi AI |
+| [MVP capability matrix](docs/shared/mvp-capability-matrix.md) | In-MVP vs Deferred + lane ownership |
 | [BE/FE split prep design](docs/superpowers/specs/2026-07-22-be-fe-split-prep-design.md) | Thiết kế tách ownership |
 | [Architecture INDEX](docs/architecture/INDEX.md) | Con trỏ tài liệu |
-| [Blueprint v2.1](docs/architecture/Kien-truc-Bot-Auto-Trade-AI-v2-Enterprise.md) | Blueprint đầy đủ |
+| [Blueprint v2.1](docs/architecture/Kien-truc-Bot-Auto-Trade-AI-v2-Enterprise.md) | Blueprint đầy đủ (tham chiếu) |
 
 ## Ownership
 
