@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trade-ai.local/schemas/candle.closed.v1.json",
+  "title": "candle.closed",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "schema_version",
+    "produced_at_utc",
+    "producer_service",
+    "symbol",
+    "adapter",
+    "timeframe",
+    "ohlcv"
+  ],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "schema_version": { "type": "integer" },
+    "produced_at_utc": { "type": "string" },
+    "producer_service": { "type": "string" },
+    "symbol": { "type": "string" },
+    "adapter": { "type": "string" },
+    "timeframe": { "type": "string" },
+    "ohlcv": {
+      "type": "object",
+      "required": ["open", "high", "low", "close", "volume"],
+      "properties": {
+        "open": { "type": "number" },
+        "high": { "type": "number" },
+        "low": { "type": "number" },
+        "close": { "type": "number" },
+        "volume": { "type": "number" }
+      }
+    }
+  },
+  "additionalProperties": true
+}

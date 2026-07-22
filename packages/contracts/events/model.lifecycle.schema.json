@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trade-ai.local/schemas/model.lifecycle.v1.json",
+  "title": "model.*",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "schema_version",
+    "produced_at_utc",
+    "producer_service",
+    "model_id",
+    "to_version",
+    "stage",
+    "approver_id"
+  ],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "schema_version": { "type": "integer" },
+    "produced_at_utc": { "type": "string" },
+    "producer_service": { "type": "string" },
+    "model_id": { "type": "string" },
+    "to_version": { "type": "string" },
+    "stage": { "type": "string" },
+    "approver_id": { "type": "string" }
+  },
+  "additionalProperties": true
+}

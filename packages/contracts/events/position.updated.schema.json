@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trade-ai.local/schemas/position.updated.v1.json",
+  "title": "position.updated",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "schema_version",
+    "produced_at_utc",
+    "producer_service",
+    "account_id",
+    "symbol",
+    "qty",
+    "avg_price"
+  ],
+  "properties": {
+    "trace_id": { "type": "string" },
+    "schema_version": { "type": "integer" },
+    "produced_at_utc": { "type": "string" },
+    "producer_service": { "type": "string" },
+    "account_id": { "type": "string" },
+    "symbol": { "type": "string" },
+    "qty": { "type": "number" },
+    "avg_price": { "type": "number" }
+  },
+  "additionalProperties": true
+}

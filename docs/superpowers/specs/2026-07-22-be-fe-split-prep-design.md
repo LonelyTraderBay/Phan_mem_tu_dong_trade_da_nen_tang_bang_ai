@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ngày** | 2026-07-22 |
-| **Trạng thái** | Approved (thiết kế Mục 1–5) — chờ user review file spec này trước khi scaffold |
+| **Trạng thái** | Approved + scaffolded; root folders: `BE_Bot_Auto_Trade_AI_Tu_Hoc/` (toàn bộ backend) + `FE_Bot_Auto_Trade_AI_Tu_Hoc/` (toàn bộ frontend); shared: `packages/contracts` + `docs/shared` |
 | **Blueprint gốc** | `Kien-truc-Bot-Auto-Trade-AI-v2-Enterprise.md` (v2.1) |
 | **Phạm vi** | Full Phase 0–4: docs tách + cây folder theo container + skeleton kỹ thuật tối thiểu — **chưa** business logic |
 | **Mục tiêu** | Hai AI (BE / FE) làm song song không đụng folder nhau; khớp lại qua `packages/contracts` |

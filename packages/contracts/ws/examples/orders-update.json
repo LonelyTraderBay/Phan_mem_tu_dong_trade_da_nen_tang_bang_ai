@@ -1,0 +1,21 @@
+{
+  "type": "orders.update",
+  "channel": "orders.updates",
+  "seq": 1843,
+  "trace_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+  "produced_at_utc": "2026-07-22T07:00:01.050Z",
+  "stale": false,
+  "payload": {
+    "client_order_id": "550e8400-e29b-41d4-a716-446655440000",
+    "broker_order_id": "binance-987654321",
+    "account_id": "11111111-2222-3333-4444-555555555555",
+    "symbol": "BTC/USDT",
+    "side": "buy",
+    "state": "PARTIALLY_FILLED",
+    "qty": 0.1,
+    "filled_qty": 0.04,
+    "avg_fill_price": 67420.25,
+    "risk_check_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    "timestamp_utc": "2026-07-22T07:00:01.040Z"
+  }
+}

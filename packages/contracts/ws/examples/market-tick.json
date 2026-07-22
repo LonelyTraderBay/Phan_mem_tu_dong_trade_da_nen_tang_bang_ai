@@ -1,0 +1,17 @@
+{
+  "type": "market.tick",
+  "channel": "market.ticks",
+  "seq": 1842,
+  "trace_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "produced_at_utc": "2026-07-22T07:00:00.123Z",
+  "stale": false,
+  "payload": {
+    "symbol": "BTC/USDT",
+    "adapter": "binance",
+    "bid": 67421.5,
+    "ask": 67422.0,
+    "last": 67421.8,
+    "volume_24h": 18234.12,
+    "exchange_ts_utc": "2026-07-22T07:00:00.100Z"
+  }
+}
