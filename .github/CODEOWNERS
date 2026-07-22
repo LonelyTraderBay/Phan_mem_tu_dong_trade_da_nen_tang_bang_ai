@@ -1,0 +1,21 @@
+# CODEOWNERS — path review gates (GitHub)
+# Owner: LonelyTraderBay
+
+* @LonelyTraderBay
+
+# Contract hub — any public API/event/RBAC/WS change
+/packages/contracts/ @LonelyTraderBay
+/docs/shared/ @LonelyTraderBay
+/docs/shared/rfcs/ @LonelyTraderBay
+/AGENTS.md @LonelyTraderBay
+/.cursor/rules/ @LonelyTraderBay
+/.github/ @LonelyTraderBay
+/scripts/ @LonelyTraderBay
+
+# Lane isolation — reviewers must reject cross-lane PRs without Owner note
+/BE_Bot_Auto_Trade_AI_Tu_Hoc/ @LonelyTraderBay
+/FE_Bot_Auto_Trade_AI_Tu_Hoc/ @LonelyTraderBay
+
+# Speckit / constitution
+/.specify/ @LonelyTraderBay
+/specs/ @LonelyTraderBay

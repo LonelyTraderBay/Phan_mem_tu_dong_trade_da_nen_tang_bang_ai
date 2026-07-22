@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-22
 
-**Status**: Draft
+**Status**: Planned
 
 **Input**: User description: "sử dụng skill này để tối ưu hóa tính năng"
 

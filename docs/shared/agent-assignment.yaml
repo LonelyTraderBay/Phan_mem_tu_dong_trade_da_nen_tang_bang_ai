@@ -1,0 +1,52 @@
+version: "1.0.0"
+feature: "001-mvp-feature-scope"
+updated_at: "2026-07-22"
+policy: >
+  AI MUST only work on assignment ids with status=active that the Owner
+  explicitly named in chat. status=blocked means do not start. status=done
+  means do not reopen without Owner request.
+assignments:
+  - id: GOV-HARDEN-2026-07-22
+    title: Enterprise governance hardening (OpenAPI MVP stubs, CI, rules, validators)
+    lane: shared
+    status: done
+    allowed_paths:
+      - "AGENTS.md"
+      - ".cursor/rules/"
+      - ".github/"
+      - ".gitleaks.toml"
+      - ".gitignore"
+      - "packages/contracts/"
+      - "scripts/"
+      - "docs/shared/"
+      - "docs/architecture/"
+      - "README.md"
+      - "specs/001-mvp-feature-scope/"
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
+    forbidden_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/services/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/web/"
+    notes: "Completed 2026-07-22 — governance CI + MVP OpenAPI stubs"
+
+  - id: T014-T028
+    title: MVP matrix paper-day / deferred doc tasks (feature 001)
+    lane: shared
+    status: done
+    allowed_paths:
+      - "packages/contracts/openapi/"
+      - "docs/shared/"
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/docs/"
+      - "specs/001-mvp-feature-scope/"
+    notes: "Feature 001 scope docs complete; trading E2E still blocked"
+
+  - id: TRADING-E2E
+    title: Full paper broker trading implementation
+    lane: both
+    status: blocked
+    allowed_paths:
+      - "BE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "FE_Bot_Auto_Trade_AI_Tu_Hoc/"
+      - "packages/contracts/"
+    notes: "Blocked until Owner opens Speckit feature with tasks + Constitution Check and sets status=active"

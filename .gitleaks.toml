@@ -1,0 +1,12 @@
+# Gitleaks config — block common secret leaks in CI / local scan
+title = "trade-ai-gitleaks"
+
+[allowlist]
+description = "Allow examples and docs placeholders"
+paths = [
+  '''.*\.example$''',
+  '''.*\.example\..*$''',
+  '''docs/.*''',
+  '''specs/.*''',
+  '''packages/contracts/.*\.yaml$''',
+]

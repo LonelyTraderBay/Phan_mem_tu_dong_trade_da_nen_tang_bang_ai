@@ -1,5 +1,9 @@
 # Nền tảng Bot Auto-Trade tích hợp AI tự học & tự huấn luyện lại
 
+> **CẢNH BÁO CHO AI / CONTRIBUTOR:** Blueprint này là **tham chiếu kiến trúc**, KHÔNG phải backlog được phép code.
+> Trước khi sửa bất kỳ file nào: đọc `AGENTS.md` → `docs/shared/mvp-capability-matrix.md` → chỉ task ID được Owner giao.
+> Không đọc hết blueprint rồi tự implement Phase 1–4. Chỉ mở section khi task trỏ rõ.
+
 **ENTERPRISE ARCHITECTURE BLUEPRINT — ENTERPRISE-GRADE**
 
 Phiên bản v2.1 — hardening từ v2.0: bổ sung Security & Compliance, DR/BCP, Test Strategy & Release Gates, Schema Registry, dual-control/SoD, OpenTelemetry, FinOps, Model Risk Management, và ADR-05..09. Đủ để CTO duyệt ngân sách, Risk Officer ký an toàn vốn, SRE vận hành lúc 3 giờ sáng, và Security/QA chặn go-live khi chưa đạt gate.

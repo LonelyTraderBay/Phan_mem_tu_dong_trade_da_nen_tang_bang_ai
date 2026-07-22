@@ -38,3 +38,7 @@
   `/speckit-specify` with that explicit goal or amend this spec before
   `/speckit-plan`.
 - Validation iteration 1: all items pass.
+- 2026-07-22: plan/tasks complete (T001–T028); governance hardening landed;
+  `scripts/validate_governance.py` PASS; spec Status = **Planned**.
+  Trading E2E remains blocked until Owner activates assignment `TRADING-E2E`.
+

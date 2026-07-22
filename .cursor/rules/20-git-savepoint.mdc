@@ -1,0 +1,15 @@
+---
+description: Savepoint commit/push dự phòng để khôi phục sau này
+alwaysApply: false
+---
+
+# Git Savepoint
+
+Dùng khi user muốn commit/push dự phòng, tạo savepoint, hoặc hỏi cách viết commit để khôi phục được.
+
+## Nguyên tắc
+
+- Message phải mô tả trạng thái khôi phục được (ví dụ: “savepoint: matrix + AGENTS trước T014”).
+- Không gộp secret vào savepoint.
+- Prefer branch feature/docs riêng; không force-push savepoint đã share.
+- Ghi rõ trong message: những gì *chưa* làm nếu còn dở.
