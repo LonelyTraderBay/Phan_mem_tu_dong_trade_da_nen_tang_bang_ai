@@ -16,8 +16,8 @@ app = FastAPI(
     version="0.1.0",
     description=(
         "API Gateway. Auth, accounts, strategies, market, positions/PnL, "
-        "and trade-report paper stubs under /v1; other business routes "
-        "return HTTP 501 until implemented."
+        "trade-report, L1 kill-switch, and alerts paper stubs under /v1; "
+        "other business routes return HTTP 501 until implemented."
     ),
 )
 
