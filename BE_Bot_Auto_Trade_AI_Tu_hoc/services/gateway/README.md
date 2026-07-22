@@ -33,3 +33,22 @@ Endpoints (OpenAPI):
 - `POST /v1/auth/logout` — `Authorization: Bearer <access>` and/or body `{refresh_token}` → `{success: true}`
 
 Tokens are held in an **in-memory** store (process-local; lost on restart). Passwords and raw tokens are never logged.
+
+## Paper market visibility stub (P1-BE-05)
+
+Fixture/mock market data (not a live exchange feed). Requires `Authorization: Bearer <access>`.
+
+| Method | Path | OpenAPI |
+|---|---|---|
+| `GET` | `/v1/market/symbols` | `getMarketSymbols` — optional `exchange`, `market_type` |
+| `GET` | `/v1/market/candles` | `getMarketCandles` — required `symbol`, `interval`; optional `start_time`, `end_time`, `limit` |
+
+### Stale marker
+
+OpenAPI `MarketSymbol` / `Candle` have **no** stale body field. Paper fixtures always advertise non-live data via response header:
+
+```http
+X-Market-Stale: true
+```
+
+Clients MUST treat fixture responses as stale. Unknown `symbol` on candles returns an empty array with the same header (empty/error path — no invented body field).
