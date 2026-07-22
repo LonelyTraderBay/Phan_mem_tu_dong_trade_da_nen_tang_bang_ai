@@ -89,9 +89,8 @@ docs/
   frontend/
     README.md
     HANDOFF-AI.md
-    screens/
+    screens/                    # 9 màn hình (khớp blueprint C4 / §04)
       dashboard.md
-      kill-switch.md
       strategy-builder.md
       ai-model-center.md
       backtest-studio.md
@@ -100,6 +99,8 @@ docs/
       alerts.md
       reports.md
       approvals.md
+    layout/
+      kill-switch.md            # thanh điều khiển chung overlay mọi màn — không đếm vào 9
     state-and-data.md
     ux-rules.md
 
@@ -189,7 +190,7 @@ Envelope bắt buộc: `trace_id`, `schema_version`, `produced_at_utc`, `produce
 ### `apps/web`
 
 - Next.js + TypeScript + Tailwind
-- App Router: 10 màn hình + layout slot kill-switch
+- App Router: 9 màn hình + layout slot kill-switch (overlay mọi màn; không phải route riêng)
 - `lib/api/`, `lib/ws/` placeholder
 - `.env.example`: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`
 - **Không:** chart thật, P&L tính ở client, hard-code risk rules
@@ -215,7 +216,7 @@ Envelope bắt buộc: `trace_id`, `schema_version`, `produced_at_utc`, `produce
 | Làn | Việc được làm | Cấm |
 |---|---|---|
 | BE-Track | Chi tiết `docs/backend/modules/*`; health thật; Compose wire; migration stub DDL 03B; khung contract test adapter | Sửa `apps/web`; sàn thật; train model |
-| FE-Track | Chi tiết `docs/frontend/screens/*`; shell + kill-switch UI stub; routes IA; auth form mock; client từ OpenAPI | Sửa `services/*`; đoán path ngoài OpenAPI; P&L client-side |
+| FE-Track | Chi tiết `docs/frontend/screens/*` (9 màn) + `layout/kill-switch.md`; shell + kill-switch UI stub; routes IA; auth form mock; client từ OpenAPI | Sửa `services/*`; đoán path ngoài OpenAPI; P&L client-side |
 
 ### DoD giai đoạn chuẩn bị (ký trước khi code nghiệp vụ)
 
