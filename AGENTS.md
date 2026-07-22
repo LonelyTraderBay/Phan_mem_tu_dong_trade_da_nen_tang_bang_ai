@@ -48,12 +48,13 @@ Governance được **ép bằng máy**: `scripts/validate_governance.py` + CI `
 ## Ưu tiên hiện tại
 
 1. Tôn trọng matrix + OpenAPI MVP (`x-mvp: true`); Deferred vẫn cấm
-2. `LIVE-VENUE-ADAPTER` (013) = Binance mainnet adapter + ≤5% NAV (`LIVE_NAV_QUOTE=100000`) — **default OFF**
+2. Live code path (`PROD-LIVE` / `LIVE-VENUE-ADAPTER` / `LIVE-SMOKE-VERIFY`) = **done** — mock verify PASS; **default OFF**
 3. Phase-2 release-gates = Owner auto-check / self-attest recorded
 4. Paper path (WS / testnet / harden / E2E / P1) = **done**
 5. Speckit: specify → plan → tasks → implement → converge — không nhảy cóc
 6. Không Phase 4 SaaS trừ Owner amend matrix
 7. Không commit live keys; không bật `LIVE_TRADING_ENABLED` trên CI
+8. Bật live thật trên host riêng chỉ khi Owner gọi `Active LIVE-OPS-ENABLE`
 
 ## Khi không chắc
 
