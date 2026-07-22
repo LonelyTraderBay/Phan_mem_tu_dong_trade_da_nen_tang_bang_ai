@@ -7,10 +7,12 @@ from fastapi import APIRouter
 from gateway.errors import ErrorDetail, error_response
 from gateway.routers.accounts import router as accounts_router
 from gateway.routers.auth import router as auth_router
+from gateway.routers.strategies import router as strategies_router
 
 router = APIRouter(prefix="/v1")
 router.include_router(auth_router)
 router.include_router(accounts_router)
+router.include_router(strategies_router)
 
 
 @router.post("/orders")
