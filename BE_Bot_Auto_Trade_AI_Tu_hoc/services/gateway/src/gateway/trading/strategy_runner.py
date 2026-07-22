@@ -9,6 +9,7 @@ from gateway import account_store
 from gateway.errors import ErrorDetail
 from gateway.strategy_store import StoredStrategy
 from gateway.trading import oms, risk_engine
+from gateway.trading.live_capital import LiveCapitalError, assert_live_entry_allowed
 from gateway.trading.paper_adapter import VenueAdapterError
 
 BASELINE_QTY = 0.001
@@ -46,6 +47,23 @@ def run_on_activate(strategy: StoredStrategy) -> ActivateResult:
             details=(ErrorDetail(field="account_id", reason="no_credentials"),),
             trace_id=trace_id,
         )
+
+    account = account_store.get_account(account_id)
+    if account is not None and not account.testnet:
+        try:
+            assert_live_entry_allowed(
+                testnet=False,
+                exchange=account.exchange,
+            )
+        except LiveCapitalError as exc:
+            return ActivateResult(
+                ok=False,
+                status_code=403,
+                code=exc.code,
+                message=exc.message,
+                details=(ErrorDetail(field="account", reason=exc.code),),
+                trace_id=trace_id,
+            )
 
     qty = BASELINE_QTY
     if strategy.max_position_size is not None and strategy.max_position_size > 0:

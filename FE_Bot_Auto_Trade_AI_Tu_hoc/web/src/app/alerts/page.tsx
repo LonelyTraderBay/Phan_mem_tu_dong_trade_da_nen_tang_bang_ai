@@ -12,6 +12,10 @@ import {
   type Alert,
   type AlertSeverity,
 } from "@/lib/alerts/types";
+import {
+  getLastAccountId,
+  setLastAccountId,
+} from "@/lib/accounts/lastAccountId";
 import { hasAccessToken } from "@/lib/auth/tokenStore";
 
 type MessageKind = "err" | "stub" | "ok";
@@ -27,6 +31,7 @@ export default function AlertsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<MessageKind | null>(null);
 
+  const [accountId, setAccountId] = useState("");
   const [severity, setSeverity] = useState<AlertSeverity | "">("");
   const [acknowledged, setAcknowledged] = useState<"all" | "open" | "acked">(
     "all",
@@ -37,7 +42,17 @@ export default function AlertsPage() {
     setMessage(null);
     setMessageKind(null);
 
+    const aid = accountId.trim();
+    if (!aid) {
+      setBusy(false);
+      setAlerts([]);
+      setMessageKind("err");
+      setMessage("Cần Account ID (UUID từ trang Accounts) — OpenAPI bắt buộc.");
+      return;
+    }
+
     const result = await getAlerts({
+      account_id: aid,
       ...(severity ? { severity } : {}),
       ...(acknowledged === "open"
         ? { acknowledged: false }
@@ -67,20 +82,23 @@ export default function AlertsPage() {
         ? "Không có alert từ API (empty list)."
         : `${result.data.length} alert(s) — codes/messages từ server.`,
     );
-  }, [acknowledged, router, severity]);
+  }, [accountId, acknowledged, router, severity]);
 
   useEffect(() => {
     if (!hasAccessToken()) {
       router.replace("/login");
       return;
     }
+    const last = getLastAccountId();
+    if (last) setAccountId(last);
     setReady(true);
   }, [router]);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !accountId.trim()) return;
     void loadAlerts();
-  }, [ready, loadAlerts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional prefill load
+  }, [ready]);
 
   if (!ready) {
     return (
@@ -117,6 +135,19 @@ export default function AlertsPage() {
       </p>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
+        <label className="block text-sm">
+          <span className="text-neutral-600">Account ID</span>
+          <input
+            className="mt-1 block w-80 rounded border border-neutral-300 bg-white px-2 py-1.5 font-mono text-xs"
+            value={accountId}
+            onChange={(e) => {
+              setAccountId(e.target.value);
+              if (e.target.value.trim()) setLastAccountId(e.target.value);
+            }}
+            placeholder="UUID từ Accounts (prefill session)"
+            disabled={busy}
+          />
+        </label>
         <label className="block text-sm">
           <span className="text-neutral-600">Severity</span>
           <select

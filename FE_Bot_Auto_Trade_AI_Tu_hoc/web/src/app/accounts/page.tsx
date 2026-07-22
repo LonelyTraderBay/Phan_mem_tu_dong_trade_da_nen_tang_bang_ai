@@ -8,6 +8,7 @@ import {
   createAccountApiKey,
   formatApiFailureForUi,
 } from "@/lib/accounts/api";
+import { setLastAccountId } from "@/lib/accounts/lastAccountId";
 import type {
   Account,
   ApiKeyMasked,
@@ -76,9 +77,10 @@ export default function AccountsPage() {
 
     setCreatedAccount(result.data);
     setAccountId(result.data.id);
+    setLastAccountId(result.data.id);
     setMessageKind("ok");
     setMessage(
-      `Account đã tạo (id: ${result.data.id}). Tiếp tục gắn API key bên dưới.`,
+      `Account đã tạo (id: ${result.data.id}). Tiếp tục gắn API key bên dưới. ID đã nhớ cho Strategies/Dashboard/Alerts.`,
     );
   }
 
