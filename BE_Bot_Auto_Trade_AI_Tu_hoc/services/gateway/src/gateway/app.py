@@ -5,18 +5,30 @@ System probes live on the app root. MVP business routes mount under /v1.
 
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
+from gateway.errors import GatewayError, error_response
 from gateway.routers import v1_router
 
 app = FastAPI(
     title="gateway",
     version="0.1.0",
     description=(
-        "API Gateway. Auth paper stubs under /v1/auth; other business "
-        "routes return HTTP 501 until implemented."
+        "API Gateway. Auth and accounts paper stubs under /v1; other "
+        "business routes return HTTP 501 until implemented."
     ),
 )
+
+
+@app.exception_handler(GatewayError)
+async def gateway_error_handler(_request: Request, exc: GatewayError) -> JSONResponse:
+    return error_response(
+        exc.status_code,
+        code=exc.code,
+        message=exc.message,
+        details=exc.details,
+    )
 
 
 @app.get("/health")

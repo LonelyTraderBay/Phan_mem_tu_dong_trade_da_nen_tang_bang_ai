@@ -56,6 +56,13 @@ def refresh_pair(refresh_token: str) -> dict[str, object] | None:
     return issue_pair(session.email)
 
 
+def resolve_access(access_token: str | None) -> Session | None:
+    """Validate a bearer access token. Returns session or None."""
+    if not access_token:
+        return None
+    return _by_access.get(access_token)
+
+
 def revoke(*, access_token: str | None = None, refresh_token: str | None = None) -> bool:
     session: Session | None = None
     if refresh_token:

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Header
 from pydantic import BaseModel, Field
 
 from gateway import auth_store
+from gateway.deps import parse_bearer
 from gateway.errors import ErrorDetail, error_response
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -35,15 +36,6 @@ class TokenPair(BaseModel):
 
 class ActionResult(BaseModel):
     success: bool
-
-
-def _bearer_token(authorization: str | None) -> str | None:
-    if not authorization:
-        return None
-    scheme, _, value = authorization.partition(" ")
-    if scheme.lower() != "bearer" or not value:
-        return None
-    return value
 
 
 @router.post("/login")
@@ -77,7 +69,7 @@ def logout(
     body: LogoutRequest | None = None,
     authorization: Annotated[str | None, Header()] = None,
 ):
-    access = _bearer_token(authorization)
+    access = parse_bearer(authorization)
     refresh_token = body.refresh_token if body else None
     if not access and not refresh_token:
         return error_response(

@@ -22,6 +22,24 @@ class ErrorBody(BaseModel):
     details: list[ErrorDetail] = Field(default_factory=list)
 
 
+class GatewayError(Exception):
+    """Raised from dependencies/routes; converted to Error JSONResponse."""
+
+    def __init__(
+        self,
+        status_code: int,
+        *,
+        code: str,
+        message: str,
+        details: list[ErrorDetail] | None = None,
+    ) -> None:
+        self.status_code = status_code
+        self.code = code
+        self.message = message
+        self.details = details or []
+        super().__init__(message)
+
+
 def error_response(
     status_code: int,
     *,
