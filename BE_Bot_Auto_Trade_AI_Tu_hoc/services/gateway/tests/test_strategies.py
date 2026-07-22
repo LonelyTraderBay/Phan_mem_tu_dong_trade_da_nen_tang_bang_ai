@@ -7,8 +7,17 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from gateway import account_store, auth_store, strategy_store
+from gateway import (
+    account_store,
+    alerts_store,
+    auth_store,
+    kill_switch_store,
+    portfolio_store,
+    risk_guard,
+    strategy_store,
+)
 from gateway.app import app
+from gateway.trading import ledger
 
 client = TestClient(app)
 
@@ -21,10 +30,20 @@ def _reset_stores() -> None:
     auth_store.clear()
     account_store.clear()
     strategy_store.clear()
+    risk_guard.clear()
+    kill_switch_store.clear()
+    alerts_store.clear()
+    portfolio_store.clear()
+    ledger.clear()
     yield
     auth_store.clear()
     account_store.clear()
     strategy_store.clear()
+    risk_guard.clear()
+    kill_switch_store.clear()
+    alerts_store.clear()
+    portfolio_store.clear()
+    ledger.clear()
 
 
 def _assert_error_shape(payload: dict) -> None:
@@ -209,6 +228,12 @@ def test_list_strategies_and_filters() -> None:
 def test_patch_strategy_status_and_name() -> None:
     token = _login_access()
     account_id = _create_account(token)
+    key = client.post(
+        f"/v1/accounts/{account_id}/api-keys",
+        headers=_auth_headers(token),
+        json={"label": "k", "api_key": "ABCDEFGHsecret", "api_secret": "seeeeeecret"},
+    )
+    assert key.status_code == 201
     strategy = client.post(
         "/v1/strategies",
         headers=_auth_headers(token),
@@ -220,7 +245,7 @@ def test_patch_strategy_status_and_name() -> None:
         },
     ).json()
 
-    # Allow-all among draft|active|paused|stopped for stub.
+    # Allow-all among draft|active|paused|stopped for stub (activate needs credentials).
     for new_status in ("active", "paused", "stopped", "draft"):
         response = client.patch(
             f"/v1/strategies/{strategy['id']}",

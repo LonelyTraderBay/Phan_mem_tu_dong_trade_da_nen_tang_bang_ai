@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
-from gateway import auth_store, kill_switch_store
+from gateway import alerts_store, auth_store, kill_switch_store
 from gateway.deps import require_auth
 
 router = APIRouter(tags=["KillSwitch"])
@@ -42,4 +42,12 @@ def post_kill_switch(
         reason=body.reason,
         updated_by=None,
     )
+    if body.engaged:
+        # T021: alert on engage — no secrets in message.
+        alerts_store.seed_alert(
+            account_id=None,
+            severity="critical",
+            code="KILL_SWITCH_ACTIVE",
+            message=f"Kill-switch L1 engaged: {body.reason}",
+        )
     return KillSwitchStatus(**status)

@@ -1,4 +1,7 @@
-"""Paper stubs: getStrategies / postStrategies / patchStrategy. No order placement."""
+"""Paper stubs: getStrategies / postStrategies / patchStrategy.
+
+Activate (status→active) runs internal paper path: credentials → risk → OMS → ledger.
+"""
 
 from __future__ import annotations
 
@@ -11,6 +14,7 @@ from pydantic import BaseModel, Field
 from gateway import account_store, auth_store, risk_guard, strategy_store
 from gateway.deps import require_auth
 from gateway.errors import ErrorDetail, error_response
+from gateway.trading import strategy_runner
 
 router = APIRouter(prefix="/strategies", tags=["Strategies"])
 
@@ -101,11 +105,31 @@ def patch_strategy(
             message="At least one field is required",
             details=[ErrorDetail(field="body", reason="min_properties")],
         )
-    # Activate = stub entry path: fail-closed when risk unavailable (P1-BE-08).
-    if "status" in fields_set and body.status == "active":
-        risk_guard.ensure_entry_allowed()
 
-    # Stub: any transition among draft|active|paused|stopped is allowed when risk up.
+    existing = strategy_store.get_strategy(str(strategy_id))
+    if existing is None:
+        return error_response(
+            404,
+            code="not_found",
+            message="Strategy not found",
+            details=[ErrorDetail(field="strategy_id", reason="unknown_strategy")],
+        )
+
+    activating = "status" in fields_set and body.status == "active" and existing.status != "active"
+    if activating:
+        # Fail-closed risk dependency (Constitution II / P1-BE-08).
+        risk_guard.ensure_entry_allowed()
+        # Paper path: credentials → risk_engine (L1) → OMS → ledger (T009–T012, T018).
+        result = strategy_runner.run_on_activate(existing)
+        if not result.ok:
+            return error_response(
+                result.status_code,
+                code=result.code,
+                message=result.message,
+                details=list(result.details),
+                trace_id=result.trace_id or None,
+            )
+
     updated = strategy_store.patch_strategy(
         str(strategy_id),
         name=body.name if "name" in fields_set else None,

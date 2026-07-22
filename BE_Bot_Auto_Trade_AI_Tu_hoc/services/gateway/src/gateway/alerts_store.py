@@ -45,7 +45,8 @@ def list_alerts(
 ) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for row in _alerts:
-        if row.get("account_id") != account_id:
+        # Include account-scoped and global (None) alerts.
+        if row.get("account_id") not in (account_id, None):
             continue
         if acknowledged is not None and row["acknowledged"] is not acknowledged:
             continue

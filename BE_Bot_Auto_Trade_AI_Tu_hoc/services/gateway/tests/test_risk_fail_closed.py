@@ -5,9 +5,18 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from gateway import account_store, auth_store, risk_guard, strategy_store
+from gateway import (
+    account_store,
+    alerts_store,
+    auth_store,
+    kill_switch_store,
+    portfolio_store,
+    risk_guard,
+    strategy_store,
+)
 from gateway.app import app
 from gateway.errors import GatewayError
+from gateway.trading import ledger
 
 client = TestClient(app)
 
@@ -21,11 +30,19 @@ def _reset_stores() -> None:
     account_store.clear()
     strategy_store.clear()
     risk_guard.clear()
+    kill_switch_store.clear()
+    alerts_store.clear()
+    portfolio_store.clear()
+    ledger.clear()
     yield
     auth_store.clear()
     account_store.clear()
     strategy_store.clear()
     risk_guard.clear()
+    kill_switch_store.clear()
+    alerts_store.clear()
+    portfolio_store.clear()
+    ledger.clear()
 
 
 def _login_access() -> str:
@@ -41,7 +58,7 @@ def _auth_headers(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
-def _create_draft_strategy(token: str) -> str:
+def _create_draft_strategy(token: str, *, with_credentials: bool = True) -> str:
     account_id = client.post(
         "/v1/accounts",
         headers=_auth_headers(token),
@@ -52,6 +69,13 @@ def _create_draft_strategy(token: str) -> str:
             "testnet": True,
         },
     ).json()["id"]
+    if with_credentials:
+        key = client.post(
+            f"/v1/accounts/{account_id}/api-keys",
+            headers=_auth_headers(token),
+            json={"label": "k", "api_key": "ABCDEFGHsecret", "api_secret": "seeeeeecret"},
+        )
+        assert key.status_code == 201
     strategy = client.post(
         "/v1/strategies",
         headers=_auth_headers(token),

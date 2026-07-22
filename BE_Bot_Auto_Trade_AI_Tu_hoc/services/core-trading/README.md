@@ -2,7 +2,12 @@
 
 **Ownership:** BE
 
-Phase-1 container for the synchronous hot path (Strategy → Risk → OMS) plus Adapter, Ledger, and Notification module boundaries. Skeleton only — no business logic, DB, or broker clients.
+Phase-1 container for the synchronous hot path (Strategy → Risk → OMS) plus Adapter, Ledger, and Notification module boundaries.
+
+**Phase-1 paper E2E (002):** runtime implementation is in Gateway `gateway.trading.*`
+(strategy_runner / risk_engine / oms / paper_adapter / ledger). Packages under
+`core_trading/{strategy,risk,oms,adapter,ledger}` document that boundary via
+`PHASE1_IMPL` constants until extraction.
 
 ## Modules
 

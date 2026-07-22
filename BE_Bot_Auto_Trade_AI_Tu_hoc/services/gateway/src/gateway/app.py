@@ -29,6 +29,7 @@ async def gateway_error_handler(_request: Request, exc: GatewayError) -> JSONRes
         code=exc.code,
         message=exc.message,
         details=exc.details,
+        trace_id=exc.trace_id,
     )
 
 

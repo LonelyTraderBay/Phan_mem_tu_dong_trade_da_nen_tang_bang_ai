@@ -13,6 +13,7 @@ if ROOT not in sys.path:
 
 from gateway.app import app  # noqa: E402
 from gateway.risk_guard import set_risk_available  # noqa: E402
+from gateway import kill_switch_store  # noqa: E402
 
 c = TestClient(app)
 steps: list[tuple[str, bool, str]] = []
@@ -25,6 +26,10 @@ def ok(name: str, cond: bool, detail: str = "") -> None:
 
 email = os.getenv("PAPER_AUTH_EMAIL", "operator@example.com")
 password = os.getenv("PAPER_AUTH_PASSWORD", "paper-dev-password")
+
+# Fresh L1 state for smoke process.
+kill_switch_store.clear()
+set_risk_available(True)
 
 r = c.get("/health")
 ok("health", r.status_code == 200 and r.json().get("status") == "ok", r.text)
@@ -68,7 +73,7 @@ r = c.post(
 ok("create_strategy", r.status_code == 201, f"{r.status_code}")
 sid = r.json().get("id") if r.status_code == 201 else None
 r = c.patch(f"/v1/strategies/{sid}", headers=h, json={"status": "active"})
-ok("activate_strategy", r.status_code == 200 and r.json().get("status") == "active", f"{r.status_code}")
+ok("activate_strategy", r.status_code == 200 and r.json().get("status") == "active", f"{r.status_code} {r.text[:160]}")
 
 r = c.get("/v1/market/symbols", headers=h)
 ok(
@@ -80,18 +85,25 @@ r = c.get("/v1/market/candles", headers=h, params={"symbol": "BTCUSDT", "interva
 ok("market_candles", r.status_code == 200, f"{r.status_code}")
 
 r = c.get("/v1/positions", headers=h, params={"account_id": aid})
-ok("positions", r.status_code == 200, f"{r.status_code}")
+pos_ok = r.status_code == 200 and isinstance(r.json(), list) and len(r.json()) >= 1
+ok("positions_after_activate", pos_ok, f"{r.status_code} n={len(r.json()) if r.status_code == 200 else 0}")
 r = c.get("/v1/pnl/summary", headers=h, params={"account_id": aid})
 ok("pnl", r.status_code == 200, f"{r.status_code}")
 r = c.get("/v1/reports/trades", headers=h, params={"account_id": aid})
-ok("trades", r.status_code == 200, f"{r.status_code}")
+trades_ok = r.status_code == 200 and isinstance(r.json(), list) and len(r.json()) >= 1
+ok("trades_after_activate", trades_ok, f"{r.status_code} n={len(r.json()) if r.status_code == 200 else 0}")
 
 r = c.post("/v1/kill-switch", headers=h, json={"engaged": True, "reason": "wave9 smoke"})
 ok("kill_switch_engage", r.status_code == 200 and r.json().get("engaged") is True, f"{r.status_code}")
 r = c.get("/v1/kill-switch", headers=h)
 ok("kill_switch_status", r.status_code == 200 and r.json().get("engaged") is True, f"{r.status_code}")
 r = c.get("/v1/alerts", headers=h, params={"account_id": aid})
-ok("alerts", r.status_code == 200, f"{r.status_code} {r.text[:120]}")
+alert_codes = {a.get("code") for a in r.json()} if r.status_code == 200 else set()
+ok(
+    "alerts",
+    r.status_code == 200 and "KILL_SWITCH_ACTIVE" in alert_codes,
+    f"{r.status_code} codes={alert_codes}",
+)
 
 set_risk_available(False)
 r2 = c.post(
